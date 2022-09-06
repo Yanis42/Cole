@@ -1,0 +1,14 @@
+﻿<Window x:Class="Cole.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Cole"
+        mc:Ignorable="d"
+        Title="Cole - OoT Actor Lookup" Height="450" Width="800" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+    <Grid Height="336" VerticalAlignment="Top" Margin="0,33,464,0">
+        <GroupBox Header="Search Actor" Margin="9,-28,36,76"/>
+        <ListBox x:Name="listBox"  Margin="35,28,66,95"/>
+        <TextBox x:Name="searchBox" VerticalAlignment="Top" Height="20" Margin="35,-5,66,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="searchBox_TextChanged"/>
+    </Grid>
+</Window>
