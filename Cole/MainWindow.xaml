@@ -6,9 +6,9 @@
         xmlns:local="clr-namespace:Cole"
         mc:Ignorable="d"
         Title="Cole - OoT Actor Lookup" Height="450" Width="800" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
-    <Grid Height="336" VerticalAlignment="Top" Margin="0,33,464,0">
+    <Grid x:Name="mainGrid" Height="336" VerticalAlignment="Top" Margin="0,33,464,0">
         <GroupBox Header="Search Actor" Margin="9,-28,36,76"/>
-        <ListBox x:Name="listBox"  Margin="35,28,66,95"/>
-        <TextBox x:Name="searchBox" VerticalAlignment="Top" Height="20" Margin="35,-5,66,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="searchBox_TextChanged"/>
+        <ListBox x:FieldModifier="public" x:Name="listBox"  Margin="35,28,66,95" SelectionChanged="listBox_SelectionChanged"/>
+        <TextBox x:FieldModifier="public" x:Name="searchBox" VerticalAlignment="Top" Height="20" Margin="35,-5,66,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="searchBox_TextChanged"/>
     </Grid>
 </Window>
