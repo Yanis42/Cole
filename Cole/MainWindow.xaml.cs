@@ -22,9 +22,14 @@ namespace Cole {
             main.SearchUpdate();
         }
 
+        private void categoryBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            main.SearchUpdate();
+        }
+
         // show parameters on selection update
         private void listBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             main.ItemUpdate();
         }
+
     }
 }

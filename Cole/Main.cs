@@ -51,6 +51,9 @@ namespace Cole {
             // get the typed text, using lower case to avoid issues
             string searchInput = UI.searchBox.Text.ToLowerInvariant();
 
+            // get the category
+            string categoryInput = "ACTORCAT_" + (string)UI.categoryBox.SelectedValue;
+
             // make a list of the search results
             var results = new List<string>();
 
@@ -61,17 +64,27 @@ namespace Cole {
             // if there's one add it to the results list
             // otherwise remove it
             foreach (var actor in actorList) {
-                string actorName = actor.Attribute("Name").Value,
-                actorID = actor.Attribute("ID").Value, actorKey = actor.Attribute("Key").Value;
+                string actorName = actor.Attribute("Name").Value, actorID = actor.Attribute("ID").Value,
+                actorKey = actor.Attribute("Key").Value, actorCategory = actor.Attribute("Category").Value;
 
-                bool nameOrIdHasInput = (
+                bool nameFilter = (
                     actorName.ToLowerInvariant().Contains(searchInput) ||
                     actorID.ToLowerInvariant().Contains(searchInput) ||
                     actorKey.ToLowerInvariant().Contains(searchInput)
                 );
 
-                if (nameOrIdHasInput) {
+                bool categoryFilter = (
+                    actorCategory == categoryInput.ToUpper() || categoryInput.ToUpper() == "ACTORCAT_ALL"
+                );
+
+                if (categoryFilter) {
                     results.Add(actorName);
+
+                    if (nameFilter) {
+                        results.Add(actorName);
+                    } else {
+                        results.Remove(actorName);
+                    }
                 } else {
                     results.Remove(actorName);
                 }
