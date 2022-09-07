@@ -3,13 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Xml.Linq;
+using System.IO;
+#nullable disable
 
 namespace Cole {
     public class Main {
         MainWindow UI = Application.Current.Windows[0] as MainWindow;
-        XElement actorFile = XElement.Load("actorList.xml");
+        XElement actorFile = null;
 
         public void Init() {
+            // open the actor data
+            try {
+                actorFile = XElement.Load("actorList.xml");
+            } catch (FileNotFoundException) {
+                var openFile = new System.Windows.Forms.OpenFileDialog();
+                MessageBox.Show("File `actorList.xml` not found!");
+
+                openFile.Filter = "XML Files (*.xml)|*.xml";
+                if (openFile.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
+                    actorFile = XElement.Load(openFile.FileName);
+                }
+            }
+
             // initialise components' content
             var actorList = actorFile.Elements("Actor").ToList();
             var categories = new List<string>();

@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+#nullable disable
 
 namespace Cole {
     public partial class MainWindow : Window {
