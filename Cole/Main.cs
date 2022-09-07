@@ -9,47 +9,61 @@ using System.IO;
 namespace Cole {
     public class Main {
         MainWindow UI = Application.Current.Windows[0] as MainWindow;
-        XElement actorFile = null;
+        XElement actorFile = null, objectFile = null;
 
-        public void Init() {
-            // open the actor data
+        // tries to open the file set in the parameters
+        // if it fails, prompts a dialog to get it
+        private XElement GetXmlData(string path) {
+            XElement file = null;
             try {
-                actorFile = XElement.Load("actorList.xml");
+                file = XElement.Load(path);
             } catch (FileNotFoundException) {
                 var openFile = new System.Windows.Forms.OpenFileDialog();
-                MessageBox.Show("File `actorList.xml` not found!");
+                MessageBox.Show(("File ``" + path + "`` not found!"), "Cole");
 
                 openFile.Filter = "XML Files (*.xml)|*.xml";
+                openFile.Title = "Select the XML file";
                 if (openFile.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                    actorFile = XElement.Load(openFile.FileName);
+                    file = XElement.Load(openFile.FileName);
                 }
             }
+            return file;
+        }
 
-            // initialise components' content
+        // initialise components' content
+        public void Init() {
+            // get the data
+            actorFile = GetXmlData("actorList.xml");
+            objectFile = GetXmlData("objectList.xml");
+
+            // make lists out of them
             var actorList = actorFile.Elements("Actor").ToList();
+            var objectList = objectFile.Elements("Object").ToList();
+
+            // create empty lists for combo box
             var categories = new List<string>();
             categories.Add("All");
 
+            // then fill it
             foreach (var actor in actorList) {
                 string actorName = actor.Attribute("Name").Value;
                 string actorCategory = actor.Attribute("Category").Value.Replace("ACTORCAT_", "");
 
-                UI.listBox.Items.Add(actorName);
+                UI.actorListBox.Items.Add(actorName);
                 categories.Add(char.ToUpper(actorCategory[0]) + actorCategory.Substring(1));
             }
-
             foreach (var category in categories.Distinct().ToList()) {
                 UI.categoryBox.Items.Add(category);
             }
         }
 
         // logic for the search system
-        public void SearchUpdate() {
+        public void ActorSearchUpdate() {
             // load the actor data and make a list out of it
             var actorList = actorFile.Elements("Actor").ToList();
 
             // get the typed text, using lower case to avoid issues
-            string searchInput = UI.searchBox.Text.ToLowerInvariant();
+            string searchInput = UI.actorSearchBox.Text.ToLowerInvariant();
 
             // get the category
             string categoryInput = "ACTORCAT_" + (string)UI.categoryBox.SelectedValue;
@@ -57,8 +71,8 @@ namespace Cole {
             // make a list of the search results
             var results = new List<string>();
 
-            // clear the listbox
-            UI.listBox.Items.Clear();
+            // clear the actorListBox
+            UI.actorListBox.Items.Clear();
 
             // iterate through the XML to find a match
             // if there's one add it to the results list
@@ -70,7 +84,7 @@ namespace Cole {
                 bool nameFilter = (
                     actorName.ToLowerInvariant().Contains(searchInput) ||
                     actorID.ToLowerInvariant().Contains(searchInput) ||
-                    actorKey.ToLowerInvariant().Contains(searchInput)
+                    actorKey.ToLowerInvariant().Contains(searchInput) ||
                 );
 
                 bool categoryFilter = (
@@ -90,11 +104,14 @@ namespace Cole {
                 }
             }
 
-            // finally, iterate through the results to add them to the listbox on screen
+            // finally, iterate through the results to add them to the actorListBox on screen
             // ``results.Distinct().ToList()`` removes duplicates
-            foreach (var result in results.Distinct().ToList()) {
-                UI.listBox.Items.Add(result);
+            results = results.Distinct().ToList();
+            foreach (var result in results) {
+                UI.actorListBox.Items.Add(result);
             }
+
+            UI.foundLabel.Content = "Found: " + results.Count.ToString();
         }
 
         // logic for selecting an actor from the list
@@ -102,7 +119,7 @@ namespace Cole {
             var actorList = actorFile.Elements("Actor").ToList();
 
             // get the selection's value, in this case the actor's name
-            string selectedActor = (string)UI.listBox.SelectedValue;
+            string selectedActor = (string)UI.actorListBox.SelectedValue;
 
             // iterate through the list to find the correct actor
             foreach (var actor in actorList) {

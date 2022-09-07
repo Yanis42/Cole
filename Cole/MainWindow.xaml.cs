@@ -18,12 +18,16 @@ namespace Cole {
         }
 
         // update the result list on text update
-        private void searchBox_TextChanged(object sender, TextChangedEventArgs e) {
-            main.SearchUpdate();
+        private void actorSearchBox_TextChanged(object sender, TextChangedEventArgs e) {
+            main.ActorSearchUpdate();
         }
 
         private void categoryBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            main.SearchUpdate();
+            main.ActorSearchUpdate();
+        }
+
+        private void objectBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            main.ActorSearchUpdate();
         }
 
         // show parameters on selection update

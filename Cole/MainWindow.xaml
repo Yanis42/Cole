@@ -6,10 +6,14 @@
         xmlns:local="clr-namespace:Cole"
         mc:Ignorable="d"
         Title="Cole - OoT Actor Lookup" Height="450" Width="800" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
-    <Grid x:Name="mainGrid" Height="336" VerticalAlignment="Top" Margin="0,33,464,0">
-        <GroupBox Header="Search Actor" Margin="9,-28,36,18"/>
-        <ComboBox x:Name="categoryBox" Margin="35,0,66,65" VerticalAlignment="Bottom" Height="21" SelectedIndex="0" SelectionChanged="categoryBox_SelectionChanged"/>
-        <ListBox x:Name="listBox"  Margin="35,28,66,95" SelectionChanged="listBox_SelectionChanged"/>
-        <TextBox x:Name="searchBox" VerticalAlignment="Top" Height="20" Margin="35,-5,66,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="searchBox_TextChanged"/>
+    <Grid x:Name="mainGrid" Margin="0,0,0,0">
+        <Grid x:Name="searchGrid" Margin="0,0,492,130">
+            <GroupBox Header="Search Actor" Margin="9,5,0,0">
+                <Label x:Name="foundLabel" Content="Found: 0" Margin="0,0,187,0" VerticalAlignment="Bottom" Height="25"/>
+            </GroupBox>
+            <ComboBox x:Name="categoryBox" Margin="47,0,54,32" VerticalAlignment="Bottom" Height="21" SelectedIndex="0" SelectionChanged="categoryBox_SelectionChanged"/>
+            <ListBox x:Name="actorListBox"  Margin="47,52,54,58" SelectionChanged="listBox_SelectionChanged"/>
+            <TextBox x:Name="actorSearchBox" Margin="47,27,54,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="actorSearchBox_TextChanged" Height="20" VerticalAlignment="Top"/>
+        </Grid>
     </Grid>
 </Window>
