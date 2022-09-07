@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -10,12 +10,21 @@ namespace Cole {
         XElement actorFile = XElement.Load("actorList.xml");
 
         public void Init() {
-            // initialise listbox
+            // initialise components' content
             var actorList = actorFile.Elements("Actor").ToList();
+            var categories = new List<string>();
+            categories.Add("All");
 
             foreach (var actor in actorList) {
-                string name = actor.Attribute("Name").Value;
-                UI.listBox.Items.Add(name);
+                string actorName = actor.Attribute("Name").Value;
+                string actorCategory = actor.Attribute("Category").Value.Replace("ACTORCAT_", "");
+
+                UI.listBox.Items.Add(actorName);
+                categories.Add(char.ToUpper(actorCategory[0]) + actorCategory.Substring(1));
+            }
+
+            foreach (var category in categories.Distinct().ToList()) {
+                UI.categoryBox.Items.Add(category);
             }
         }
 

@@ -9,7 +9,7 @@ using System.Windows;
 namespace Cole
 {
     /// <summary>
-    /// Logique d'interaction pour App.xaml
+    /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
