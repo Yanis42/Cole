@@ -137,9 +137,6 @@ namespace Cole {
                     // add the required components to the grid
                     manager.InitActorProcess(actorFile, actor);
 
-                    // debug print
-                    Console.WriteLine("Selected Actor: {0}", actor.Attribute("ID").Value);
-
                     // get out of the loop as we found the actor
                     break;
                 }

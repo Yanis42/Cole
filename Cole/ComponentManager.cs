@@ -67,11 +67,6 @@ namespace Cole
                     if (childType == typeof(ComboBox)) {
                         ComboBox comboBox = (ComboBox)child;
                         if (comboBox.Name == "typeBox") {
-                            // if the current child is the type box
-                            // clear its item list
-                            child.IsEnabled = true;
-                            comboBox.Items.Clear();
-
                             // `continue` stops the current iteration
                             // and go to the next one
                             continue;
@@ -190,6 +185,10 @@ namespace Cole
 
         // initialises the `typeBox` ComboBox
         private void InitActorType(XElement actor) {
+            // enable the type box and clear its item list
+            UI.typeBox.IsEnabled = true;
+            UI.typeBox.Items.Clear();
+
             // get every items from the type sub-element
             // disable the combo box if the list is null
             var typeList = new List<XElement>();
@@ -277,9 +276,11 @@ namespace Cole
                 "Enum", "Property", "Flag", "Bool", "Message", "ChestContent", "Collectible"
             };
 
+            // init the type combo box
+            InitActorType(actor);
+
             // run the processor for each tag in the list
             foreach (string tag in tagList) {
-                InitActorType(actor);
                 topValue = ProcessActor(actorFile, actor, tag, topValue);
             }
         }
