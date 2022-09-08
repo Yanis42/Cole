@@ -134,6 +134,9 @@ namespace Cole {
                     // start by resetting the grid
                     manager.ResetParamGrid();
 
+                    // add the required components to the grid
+                    manager.ProcessActor(actor);
+
                     // debug print
                     Console.WriteLine("Selected Actor: {0}", actor.Attribute("ID").Value);
 

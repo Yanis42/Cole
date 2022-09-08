@@ -18,7 +18,7 @@
         <Grid x:Name="paramGrid" Margin="313,0,163,130">
             <GroupBox x:Name="paramBox" Header="Parameters" Margin="0,5,0,0">
             </GroupBox>
-            <ComboBox x:Name="typeBox" Margin="10,28,10,0" VerticalAlignment="Top"/>
+            <ComboBox x:Name="typeBox" Margin="10,28,10,0" IsEnabled="False" VerticalAlignment="Top"/>
         </Grid>
     </Grid>
 </Window>
