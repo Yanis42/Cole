@@ -18,69 +18,39 @@ namespace Cole
             /* 3 */ label,
         }
 
+        /***********************
+         *  Get/Set Functions  *
+         ***********************/
+
+        // returns the list of element inside ``<List>`` nodes in the XML
+        private List<XElement> GetList(XElement actorFile, string listName) {
+            var list = actorFile.Elements("List").ToList();
+            List<XElement> itemList = null;
+
+            foreach (XElement elem in list) {
+                if (elem.Attribute("Name").Value == listName) {
+                    itemList = elem.Elements("Item").ToList();
+                    break;
+                }
+            }
+            return itemList;
+        }
+
         // get "position" data
         public Thickness GetMargin(short left, short top, short right, short bottom) {
             var margin = new Thickness();
 
             margin.Left = left;
-            margin.Top = top + 27;
+            margin.Top = top + 27; // account for the type combo box
             margin.Right = right;
             margin.Bottom = bottom;
 
             return margin;
         }
 
-        /** Adds a component.
-          *
-          * Parameters:
-          * ``ComponentType type``: the type of component to add
-          * ``string name``: the name of the component, like an ID
-          * ``string label``: the description of the component
-          * ``Thickness margin``: position data
-          */
-        public object AddComponent(ComponentType type, string name, string label, Thickness margin) {
-            switch (type) {
-                case ComponentType.comboBox:
-                    var comboBox = new ComboBox();
-                    UI.paramGrid.Children.Add(comboBox);
-                    comboBox.Name = name;
-                    comboBox.Margin = margin;
-                    comboBox.VerticalAlignment = VerticalAlignment.Top;
-                    return comboBox;
-
-                case ComponentType.checkBox:
-                    var checkBox = new CheckBox();
-                    UI.paramGrid.Children.Add(checkBox);
-                    checkBox.Name = name;
-                    checkBox.Margin = margin;
-                    checkBox.VerticalAlignment = VerticalAlignment.Top;
-                    checkBox.Content = (label != null) ? label : "Error";
-                    return checkBox;
-
-                case ComponentType.textBox:
-                    var textBox = new TextBox();
-                    UI.paramGrid.Children.Add(textBox);
-                    textBox.Name = name;
-                    textBox.Margin = margin;
-                    textBox.VerticalAlignment = VerticalAlignment.Top;
-                    textBox.TextWrapping = TextWrapping.Wrap;
-                    textBox.MaxLines = 1;
-                    textBox.Height = 20;
-                    return textBox;
-
-                case ComponentType.label:
-                    var uiLabel = new Label();
-                    UI.paramGrid.Children.Add(uiLabel);
-                    uiLabel.Content = (label != null) ? label : "Error";
-                    uiLabel.Margin = margin;
-                    uiLabel.VerticalAlignment = VerticalAlignment.Top;
-                    return uiLabel;
-
-                default:
-                    MessageBox.Show(("Component Type Error!"), "Cole");
-                    return null;
-            }
-        }
+        /***********************
+         * Component Functions *
+         ***********************/
 
         // removes every components added for parameters
         public void ResetParamGrid() {
@@ -119,8 +89,109 @@ namespace Cole
             }
         }
 
+        /** Adds a component.
+          *
+          * Parameters:
+          * ``ComponentType type``: the type of component to add
+          * ``string name``: the name of the component, like an ID
+          * ``string label``: the description of the component
+          * ``Thickness margin``: position data
+          */
+        public object AddComponent(ComponentType type, string name, string label, Thickness margin) {
+            switch (type) {
+                case ComponentType.comboBox:
+                    var comboBox = new ComboBox();
+                    UI.paramGrid.Children.Add(comboBox);
+                    comboBox.Name = name;
+                    comboBox.Margin = margin;
+                    comboBox.VerticalAlignment = VerticalAlignment.Top;
+                    return comboBox;
+                case ComponentType.checkBox:
+                    var checkBox = new CheckBox();
+                    UI.paramGrid.Children.Add(checkBox);
+                    checkBox.Name = name;
+                    checkBox.Margin = margin;
+                    checkBox.VerticalAlignment = VerticalAlignment.Top;
+                    checkBox.Content = (label != null) ? label : "Error";
+                    return checkBox;
+                case ComponentType.textBox:
+                    var textBox = new TextBox();
+                    UI.paramGrid.Children.Add(textBox);
+                    textBox.Name = name;
+                    textBox.Margin = margin;
+                    textBox.VerticalAlignment = VerticalAlignment.Top;
+                    textBox.TextWrapping = TextWrapping.Wrap;
+                    textBox.MaxLines = 1;
+                    textBox.Height = 20;
+                    return textBox;
+                case ComponentType.label:
+                    var uiLabel = new Label();
+                    UI.paramGrid.Children.Add(uiLabel);
+                    uiLabel.Content = (label != null) ? label : "Error";
+                    uiLabel.Margin = margin;
+                    uiLabel.VerticalAlignment = VerticalAlignment.Top;
+                    return uiLabel;
+                default:
+                    MessageBox.Show(("Component Type Error!"), "Cole");
+                    return null;
+            }
+        }
+
+        // add a new label to the UI
+        private void AddLabel(string displayName, short topValue) {
+            Label label = (Label)AddComponent(
+                ComponentType.label, "label", displayName, GetMargin(5, topValue, 102, 0)
+            );
+        }
+
+        // add a combo box on the ui
+        private void AddComboBox(XElement elem, short topValue, List<XElement> itemList, string labelName) {
+            // the item list needs to be defined
+            if (itemList != null) {
+                AddLabel(labelName, (short)(topValue - 2));
+                ComboBox comboBox = (ComboBox)AddComponent(
+                    ComponentType.comboBox, "enumBox", null, GetMargin(185, topValue, 10, 0)
+                );
+
+                // populate the combo box item list
+                foreach (XElement item in itemList) {
+                    comboBox.Items.Add(item.Attribute("Name").Value);
+                }
+                // select first element by default
+                comboBox.SelectedIndex = 0;
+            }
+        }
+
+        // add a textbox on the ui
+        private void AddTextBox(XElement elem, short topValue, string name) {
+            string displayName = "Name";
+            TextBox textBox = (TextBox)AddComponent(
+                ComponentType.textBox, name, null, GetMargin(185, topValue, 10, 0)
+            );
+
+            // special case for flags
+            displayName = (name == "flagBox") ? (elem.Attribute("Type").Value + " Flag")
+                        : elem.Attribute("Name").Value;
+
+            AddLabel(displayName, (short)(topValue - 2));
+        }
+
+        // add a checkbox on the ui
+        private void AddCheckBox(XElement elem, short topValue) {
+            CheckBox flagBox = (CheckBox)AddComponent(
+                ComponentType.checkBox, "boolBox", elem.Attribute("Name").Value,
+                GetMargin(10, topValue, 102, 0)
+            );
+        }
+
+        /***********************
+         *   Actor Processor   *
+         ***********************/
+
         // initialises the `typeBox` ComboBox
-        private void ProcessActorType(XElement actor) {
+        private void InitActorType(XElement actor) {
+            // get every items from the type sub-element
+            // disable the combo box if the list is null
             var typeList = new List<XElement>();
             try {
                 typeList = actor.Element("Type").Elements("Item").ToList();
@@ -128,94 +199,88 @@ namespace Cole
                 foreach (XElement item in typeList) {
                     UI.typeBox.Items.Add(item.Value);
                 }
+                // select the first element by default
                 UI.typeBox.SelectedIndex = 0;
             } catch (System.NullReferenceException) {
                 UI.typeBox.IsEnabled = false;
             }
         }
 
-        private void ProcessActorEnum(XElement Enum, short topValue) {
-            var enumList = new List<XElement>();
-            enumList = Enum.Elements("Item").ToList();
+        // main logic of the actor processor
+        private short ProcessActor(XElement actorFile, XElement actor, string tag, short topValue) {
+            var list = actor.Elements(tag)?.ToList();
+            var itemList = new List<XElement>();
 
-            ComboBox enumBox = (ComboBox)AddComponent(
-                ComponentType.comboBox, "enumBox", null, GetMargin(185, topValue, 10, 0)
-            );
+            // if the list is not null it means we need to draw
+            // a new element on the UI
+            if (list != null) {
+                foreach (XElement elem in list) {
+                    topValue += 27;
 
-            Label label = (Label)AddComponent(
-                ComponentType.label, "label", Enum.Attribute("Name").Value,
-                GetMargin(5, (short)(topValue - 2), 102, 0)
-            );
-
-            foreach (XElement item in enumList) {
-                enumBox.Items.Add(item.Attribute("Name").Value);
+                    // do different actions depending on what we need to draw
+                    switch (tag) {
+                        case "Enum":
+                            AddComboBox(
+                                elem,
+                                topValue,
+                                elem.Elements("Item").ToList(),
+                                elem.Attribute("Name").Value
+                            );
+                            break;
+                        case "Property":
+                            AddTextBox(elem, topValue, "propertyBox");
+                            break;
+                        case "Flag":
+                            AddTextBox(elem, topValue, "flagBox");
+                            break;
+                        case "Bool":
+                            AddCheckBox(elem, topValue);
+                            break;
+                        case "Message":
+                            AddComboBox(
+                                elem,
+                                (short)(topValue - 2),
+                                GetList(actorFile, "Elf_Msg Message ID"),
+                                "Message ID"
+                            );
+                            break;
+                        case "ChestContent":
+                            AddComboBox(
+                                elem,
+                                (short)(topValue - 2),
+                                GetList(actorFile, "Chest Content"),
+                                "Chest Content"
+                            );
+                            break;
+                        case "Collectible":
+                            AddComboBox(
+                                elem,
+                                (short)(topValue - 2),
+                                GetList(actorFile, "Collectibles"),
+                                "Collectibles"
+                            );
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
-            enumBox.SelectedIndex = 0;
+            return topValue;
         }
 
-        private void ProcessActorProperty(XElement property, short topValue) {
-            TextBox propertyBox = (TextBox)AddComponent(
-                ComponentType.textBox, "propertyBox", null, GetMargin(185, topValue, 10, 0)
-            );
-
-            Label label = (Label)AddComponent(
-                ComponentType.label, "label", property.Attribute("Name").Value,
-                GetMargin(5, (short)(topValue - 2), 102, 0)
-            );
-        }
-
-        private void ProcessActorFlag(XElement flag, short topValue) {
-            TextBox flagBox = (TextBox)AddComponent(
-                ComponentType.textBox, "flagBox", null, GetMargin(185, topValue, 10, 0)
-            );
-
-            Label label = (Label)AddComponent(
-                ComponentType.label, "label",
-                (flag.Attribute("Type").Value + " Flag"), GetMargin(5, (short)(topValue - 2), 102, 0)
-            );
-        }
-
-        private void ProcessActorBool(XElement Bool, short topValue) {
-            CheckBox flagBox = (CheckBox)AddComponent(
-                ComponentType.checkBox, "boolBox", Bool.Attribute("Name").Value,
-                GetMargin(10, topValue, 102, 0)
-            );
-        }
-
-        public void ProcessActor(XElement actor) {
+        // called by Main, initialises and run the processor
+        public void InitActorProcess(XElement actorFile, XElement actor) {
+            // ``topValue`` defines the Y-Pos of an element
+            // it's incremented by 27 before each use
             short topValue = 0;
-            ProcessActorType(actor);
+            string[] tagList = new string[] {
+                "Enum", "Property", "Flag", "Bool", "Message", "ChestContent", "Collectible"
+            };
 
-            var enumList = actor.Elements("Enum")?.ToList();
-            if (enumList != null) {
-                foreach (XElement elem in enumList) {
-                    topValue += 27;
-                    ProcessActorEnum(elem, topValue);
-                }
-            }
-
-            var propertyList = actor.Elements("Property")?.ToList();
-            if (propertyList != null) {
-                foreach (XElement elem in propertyList) {
-                    topValue += 27;
-                    ProcessActorProperty(elem, topValue);
-                }
-            }
-
-            var flagList = actor.Elements("Flag")?.ToList();
-            if (flagList != null) {
-                foreach (XElement elem in flagList) {
-                    topValue += 27;
-                    ProcessActorFlag(elem, topValue);
-                }
-            }
-
-            var boolList = actor.Elements("Bool")?.ToList();
-            if (boolList != null) {
-                foreach (XElement elem in boolList) {
-                    topValue += 27;
-                    ProcessActorBool(elem, topValue);
-                }
+            // run the processor for each tag in the list
+            foreach (string tag in tagList) {
+                InitActorType(actor);
+                topValue = ProcessActor(actorFile, actor, tag, topValue);
             }
         }
     }
