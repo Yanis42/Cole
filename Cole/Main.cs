@@ -8,6 +8,7 @@ using System.IO;
 
 namespace Cole {
     public class Main {
+        ComponentManager manager = null;
         MainWindow UI = Application.Current.Windows[0] as MainWindow;
         XElement actorFile = null, objectFile = null;
 
@@ -32,6 +33,9 @@ namespace Cole {
 
         // initialise components' content
         public void Init() {
+            // initialise the component manager
+            manager = new ComponentManager();
+
             // get the data
             actorFile = GetXmlData("actorList.xml");
             objectFile = GetXmlData("objectList.xml");
@@ -84,7 +88,7 @@ namespace Cole {
                 bool nameFilter = (
                     actorName.ToLowerInvariant().Contains(searchInput) ||
                     actorID.ToLowerInvariant().Contains(searchInput) ||
-                    actorKey.ToLowerInvariant().Contains(searchInput) ||
+                    actorKey.ToLowerInvariant().Contains(searchInput)
                 );
 
                 bool categoryFilter = (
@@ -127,7 +131,14 @@ namespace Cole {
 
                 // once we found it, draw the parameters
                 if (actorName == selectedActor) {
+                    // start by resetting the grid
+                    manager.ResetParamGrid();
+
+                    // debug print
                     Console.WriteLine("Selected Actor: {0}", actor.Attribute("ID").Value);
+
+                    // get out of the loop as we found the actor
+                    break;
                 }
             }
         }

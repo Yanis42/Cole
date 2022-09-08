@@ -15,5 +15,10 @@
             <ListBox x:Name="actorListBox"  Margin="47,52,54,58" SelectionChanged="listBox_SelectionChanged"/>
             <TextBox x:Name="actorSearchBox" Margin="47,27,54,0" TextWrapping="Wrap" MaxLines="1" Tag="" TextChanged="actorSearchBox_TextChanged" Height="20" VerticalAlignment="Top"/>
         </Grid>
+        <Grid x:Name="paramGrid" Margin="313,0,163,130">
+            <GroupBox x:Name="paramBox" Header="Parameters" Margin="0,5,0,0">
+            </GroupBox>
+            <ComboBox x:Name="typeBox" Margin="10,28,10,0" VerticalAlignment="Top"/>
+        </Grid>
     </Grid>
 </Window>
