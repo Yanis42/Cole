@@ -1,7 +1,3 @@
 # Project files
-.vs
-[Bb]in
-[Oo]bj
-[Pp]roperties
-*.exe
-*.user
+.vscode/
+__pycache__/
