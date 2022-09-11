@@ -27,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.searchBox.textChanged.connect(self.searchBoxOnUpdate)
         self.actorCategoryList.currentTextChanged.connect(self.searchBoxOnUpdate)
         self.actorFoundBox.currentTextChanged.connect(self.foundBoxOnUpdate)
+        self.actorTypeList.currentTextChanged.connect(self.typeBoxOnUpdate)
 
     def initComponents(self):
         """Initialise the UI widgets"""
@@ -46,8 +47,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def foundBoxOnUpdate(self):
         """Called everytime a new actor is chosen"""
-        clearParamLayout(self)
         initActorTypeBox(self, actorRoot)
+
+    def typeBoxOnUpdate(self):
+        """Called everytime the actor type is changed"""
+        clearParamLayout(self)
         processActor(self, actorRoot)
 
 

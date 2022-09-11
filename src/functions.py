@@ -97,10 +97,10 @@ def getActorEnumParamValue(actorRoot: ET.Element, selectedType: str, actorID: st
         if actor.get("ID") == actorID:
             for elem in actor:
                 if elem.tag == elemTag:
-                    identifier = elem.text if elemTag == "Type" else "Name"
                     for item in elem:
-                        if selectedType == item.get(identifier):
-                            return item.get(valueName)
+                        identifier = item.text if (elemTag == "Type") else elem.get("Name")
+                        if selectedType == identifier:
+                            return item.get("Params") if (elemTag == "Type") else item.get("Value")
     return
 
 
@@ -174,6 +174,9 @@ def processActor(self, actorRoot: ET.Element):
     items = None
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
+        typeParam = getActorEnumParamValue(
+            actorRoot, self.actorTypeList.currentText(), getActorIDFromName(actorRoot, selectedItem.text()), "Type"
+        )
         for actor in actorRoot:
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
@@ -182,6 +185,7 @@ def processActor(self, actorRoot: ET.Element):
                     break
                 for elem in actor:
                     if elem.tag in subElemTags:
+                        tiedTypeList = elem.get("TiedActorTypes")
                         widgetType = tagToWidget[elem.tag]
                         objName = f"{actor.get('Key')}{widgetType}"
                         labelName = f"{objName}Label"
@@ -198,12 +202,13 @@ def processActor(self, actorRoot: ET.Element):
                                 labelText = "Elf_Msg Message ID"
                             items = getListItems(actorRoot, labelText)
 
-                        if widgetType == "ComboBox":
-                            if items is None:
-                                items = [item.get("Name") for item in elem]
-                            addComboBox(self, objName, labelName, labelText, items)
-                        elif widgetType == "LineEdit":
-                            addLineEdit(self, objName, labelName, labelText)
-                        elif widgetType == "CheckBox":
-                            addCheckBox(self, objName, labelName, labelText)
+                        if tiedTypeList is None or typeParam in tiedTypeList.split(","):
+                            if widgetType == "ComboBox":
+                                if items is None:
+                                    items = [item.get("Name") for item in elem]
+                                addComboBox(self, objName, labelName, labelText, items)
+                            elif widgetType == "LineEdit":
+                                addLineEdit(self, objName, labelName, labelText)
+                            elif widgetType == "CheckBox":
+                                addCheckBox(self, objName, labelName, labelText)
                 break
