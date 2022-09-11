@@ -19,3 +19,21 @@ actorCatDebugToNormal = {
     "ACTORCAT_DOOR": "Door",
     "ACTORCAT_CHEST": "Chest"
 }
+
+subElemTags = [
+    "Enum",
+    "Property",
+    "Flag",
+    "Bool",
+    "ChestContent",
+    "Collectible"
+]
+
+tagToWidget = {
+    "Enum": "ComboBox",
+    "Property": "LineEdit",
+    "Flag": "LineEdit",
+    "Bool": "CheckBox",
+    "ChestContent" : "ComboBox",
+    "Collectible" : "ComboBox"
+}

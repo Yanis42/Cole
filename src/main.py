@@ -1,7 +1,9 @@
 from sys import exit, argv
 from PyQt6 import uic, QtWidgets
 from data import uiFile, actorRoot
-from functions import getRoot, findActors, findCategories, initActorTypeBox, addLabel, addComboBox
+from functions import (
+    getRoot, findActors, findCategories, initActorTypeBox, clearParamLayout, processActor
+)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -23,6 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actorCategoryList.clear()
         self.actorCategoryList.addItems(findCategories(actorRoot))
         self.searchBoxOnUpdate()
+        self.paramLayout.setHorizontalSpacing(50)
 
     # connections callbacks
 
@@ -33,14 +36,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actorFoundLabel.setText(f"Found: {len(searchResults)}")
 
     def foundBoxOnUpdate(self):
+        clearParamLayout(self)
         initActorTypeBox(self, actorRoot)
-        label = addLabel(self, "testLabel", "Saucisse")
-        self.paramLabelLayout.addWidget(label)
-
-        self.paramLabelLayout.addStretch()
-        comboBox = addComboBox(self, "testComboBox")
-        self.paramLayout.addWidget(comboBox)
-
+        processActor(self, actorRoot)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)

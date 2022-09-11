@@ -2,7 +2,7 @@ from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QFileDialog, QLabel, QComboBox, QLineEdit, QCheckBox
 from PyQt6.QtCore import QRect
 from pathlib import Path
-from data import actorCatDebugToNormal
+from data import actorCatDebugToNormal, subElemTags, tagToWidget
 
 def getRoot(xmlFile: str):
     try:
@@ -88,14 +88,33 @@ def addLabel(self, objName: str, text: str):
     label = QLabel(self.paramGroup)
     label.setObjectName(objName)
     label.setText(text)
-    self.paramLabelLayout.addStretch()
     return label
 
-def addComboBox(self, objName: str):
+def addComboBox(self, objName: str, labelName: str, text: str, items: list):
     comboBox = QComboBox(self.paramGroup)
     comboBox.setObjectName(objName)
-    self.paramLayout.addStretch()
+    comboBox.addItems(items)
+    label = addLabel(self, labelName, text)
+    self.paramLayout.addRow(label, comboBox)
     return comboBox
+
+def addLineEdit(self, objName: str, labelName: str, text: str):
+    lineEdit = QLineEdit(self.paramGroup)
+    lineEdit.setObjectName(objName)
+    label = addLabel(self, labelName, text)
+    self.paramLayout.addRow(label, lineEdit)
+    return lineEdit
+
+def addCheckBox(self, objName: str, labelName: str, text: str):
+    checkBox = QCheckBox(self.paramGroup)
+    checkBox.setObjectName(objName)
+    label = addLabel(self, labelName, text)
+    self.paramLayout.addRow(label, checkBox)
+    return checkBox
+
+def clearParamLayout(self):
+    while self.paramLayout.rowCount():
+        self.paramLayout.removeRow(0)
 
 # Actor Processor
 
@@ -109,3 +128,34 @@ def initActorTypeBox(self, actorRoot):
             self.actorTypeList.setEnabled(True)
         else:
             self.actorTypeList.setEnabled(False)
+
+def processActor(self, actorRoot: ET.Element):
+    items = None
+    selectedItem = self.actorFoundBox.currentItem()
+    if selectedItem is not None:
+        for actor in actorRoot:
+            if actor.get("Name") == selectedItem.text():
+                for elem in actor:
+                    if elem.tag in subElemTags:
+                        widgetType = tagToWidget[elem.tag]
+                        objName = f"{actor.get('Key')}{widgetType}"
+                        labelName = f"{objName}Label"
+                        labelText = elem.get("Name")
+
+                        if elem.tag == "Flag":
+                            labelText = f"{elem.get('Type')} Flag"
+                        elif elem.tag == "ChestContent":
+                            labelText = "Chest Content"
+                            items = [item.get("Name") for list in actorRoot if (list.tag == "List") and (list.get("Name") == labelText) for item in list]
+                        elif elem.tag == "Collectible":
+                            labelText = "Collectibles"
+                            items = [item.get("Name") for list in actorRoot if (list.tag == "List") and (list.get("Name") == labelText) for item in list]
+
+                        if widgetType == "ComboBox":
+                            if items is None:
+                                items = [item.get("Name") for item in elem]
+                            addComboBox(self, objName, labelName, labelText, items)
+                        elif widgetType == "LineEdit":
+                            addLineEdit(self, objName, labelName, labelText)
+                        elif widgetType == "CheckBox":
+                            addCheckBox(self, objName, labelName, labelText)
