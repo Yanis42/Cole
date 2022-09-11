@@ -15,3 +15,4 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - PyQt6
 
 ## Contributions are welcome!
+This project use Black to format the code properly

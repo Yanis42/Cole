@@ -34,5 +34,5 @@ tagToWidget = {
     "Bool": "CheckBox",
     "ChestContent": "ComboBox",
     "Collectible": "ComboBox",
-    "Message": "LineEdit",
+    "Message": "ComboBox",
 }
