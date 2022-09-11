@@ -176,6 +176,10 @@ def processActor(self, actorRoot: ET.Element):
     if selectedItem is not None:
         for actor in actorRoot:
             if actor.get("Name") == selectedItem.text():
+                if len(actor) == 0:
+                    label = addLabel(self, "noParamLabel", "This actor doesn't have parameters")
+                    self.paramLayout.addRow(label, None)
+                    break
                 for elem in actor:
                     if elem.tag in subElemTags:
                         widgetType = tagToWidget[elem.tag]
