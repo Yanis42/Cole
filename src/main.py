@@ -2,7 +2,12 @@ from sys import exit, argv
 from PyQt6 import uic, QtWidgets
 from data import uiFile, actorRoot
 from functions import (
-    getRoot, findActors, findCategories, initActorTypeBox, clearParamLayout, processActor
+    getRoot,
+    findActors,
+    findCategories,
+    initActorTypeBox,
+    clearParamLayout,
+    processActor,
 )
 
 
@@ -39,6 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
         clearParamLayout(self)
         initActorTypeBox(self, actorRoot)
         processActor(self, actorRoot)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)

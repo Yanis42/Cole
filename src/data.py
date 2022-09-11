@@ -17,7 +17,7 @@ actorCatDebugToNormal = {
     "ACTORCAT_MISC": "Misc",
     "ACTORCAT_BOSS": "Boss",
     "ACTORCAT_DOOR": "Door",
-    "ACTORCAT_CHEST": "Chest"
+    "ACTORCAT_CHEST": "Chest",
 }
 
 subElemTags = [
@@ -26,7 +26,8 @@ subElemTags = [
     "Flag",
     "Bool",
     "ChestContent",
-    "Collectible"
+    "Collectible",
+    "Message",
 ]
 
 tagToWidget = {
@@ -34,6 +35,7 @@ tagToWidget = {
     "Property": "LineEdit",
     "Flag": "LineEdit",
     "Bool": "CheckBox",
-    "ChestContent" : "ComboBox",
-    "Collectible" : "ComboBox"
+    "ChestContent": "ComboBox",
+    "Collectible": "ComboBox",
+    "Message": "LineEdit",
 }
