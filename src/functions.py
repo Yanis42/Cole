@@ -138,12 +138,12 @@ def addLineEdit(self, objName: str, labelName: str, text: str):
     return lineEdit
 
 
-def addCheckBox(self, objName: str, labelName: str, text: str):
+def addCheckBox(self, objName: str, text: str):
     """Creates a check box widget and add it to the UI with the corresponding label name"""
     checkBox = QCheckBox(self.paramGroup)
     checkBox.setObjectName(objName)
-    label = addLabel(self, labelName, text)
-    self.paramLayout.addRow(label, checkBox)
+    checkBox.setText(text)
+    self.paramLayout.addRow(checkBox, None)
     return checkBox
 
 
@@ -185,11 +185,16 @@ def processActor(self, actorRoot: ET.Element):
                     break
                 for elem in actor:
                     if elem.tag in subElemTags:
-                        tiedTypeList = elem.get("TiedActorTypes")
                         widgetType = tagToWidget[elem.tag]
                         objName = f"{actor.get('Key')}{widgetType}"
                         labelName = f"{objName}Label"
                         labelText = elem.get("Name")
+                        tiedTypeList = elem.get("TiedActorTypes")
+
+                        if tiedTypeList is None:
+                            self.ignoreTiedBox.setHidden(True)
+                        else:
+                            self.ignoreTiedBox.setHidden(False)
 
                         if elem.tag == "Flag":
                             labelText = f"{elem.get('Type')} Flag"
@@ -202,7 +207,7 @@ def processActor(self, actorRoot: ET.Element):
                                 labelText = "Elf_Msg Message ID"
                             items = getListItems(actorRoot, labelText)
 
-                        if tiedTypeList is None or typeParam in tiedTypeList.split(","):
+                        if tiedTypeList is None or typeParam in tiedTypeList.split(",") or self.ignoreTiedBox.isChecked():
                             if widgetType == "ComboBox":
                                 if items is None:
                                     items = [item.get("Name") for item in elem]
@@ -210,5 +215,5 @@ def processActor(self, actorRoot: ET.Element):
                             elif widgetType == "LineEdit":
                                 addLineEdit(self, objName, labelName, labelText)
                             elif widgetType == "CheckBox":
-                                addCheckBox(self, objName, labelName, labelText)
+                                addCheckBox(self, objName, labelText)
                 break

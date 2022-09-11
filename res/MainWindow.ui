@@ -144,10 +144,23 @@
        <x>10</x>
        <y>50</y>
        <width>291</width>
-       <height>241</height>
+       <height>221</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="paramLayout"/>
+    </widget>
+    <widget class="QCheckBox" name="ignoreTiedBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>280</y>
+       <width>121</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Ignore Tied Params</string>
+     </property>
     </widget>
    </widget>
   </widget>

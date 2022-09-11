@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actorCategoryList.currentTextChanged.connect(self.searchBoxOnUpdate)
         self.actorFoundBox.currentTextChanged.connect(self.foundBoxOnUpdate)
         self.actorTypeList.currentTextChanged.connect(self.typeBoxOnUpdate)
+        self.ignoreTiedBox.stateChanged.connect(self.typeBoxOnUpdate)
 
     def initComponents(self):
         """Initialise the UI widgets"""
@@ -35,6 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actorCategoryList.addItems(findCategories(actorRoot))
         self.searchBoxOnUpdate()
         self.paramLayout.setHorizontalSpacing(50)
+        self.ignoreTiedBox.setHidden(True)
 
     # connections callbacks
 

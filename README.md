@@ -11,7 +11,6 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Add an actor in the list
 - Delete an actor of the list
 - Button to change the actor file
-- Button to ignore tied params (to show everything)
 
 ## Requirements
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
