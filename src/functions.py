@@ -1,11 +1,11 @@
 from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QFileDialog, QLabel, QComboBox, QLineEdit, QCheckBox
-from PyQt6.QtCore import QRect
 from pathlib import Path
 from data import actorCatDebugToNormal, subElemTags, tagToWidget
 
 
 def getRoot(xmlFile: str):
+    """Try to parse an XML file, opens an 'Open File Dialog' if file not found"""
     try:
         root = ET.parse(xmlFile).getroot()
     except FileNotFoundError:
@@ -18,11 +18,17 @@ def getRoot(xmlFile: str):
 
 
 def findActors(actorRoot: ET.Element, searchInput: str, categoryInput: str):
+    """Returns every actor that contains the value from ``searchInput`` and ``categoryInput``"""
+    # using lowercase for every string
     searchInput = searchInput.lower()
+
+    # search results list
     results = []
 
+    # going through the XML data
     for actor in actorRoot:
         if actor is not None and actor.tag == "Actor":
+            # search by ID, key, category and name
             actorID = actor.get("ID", "").lower()
             actorKey = actor.get("Key", "").lower()
             actorCategory = actor.get("Category")
@@ -37,6 +43,8 @@ def findActors(actorRoot: ET.Element, searchInput: str, categoryInput: str):
                 or searchInput in actorKey.replace("_", " ")
             ) and (categoryInput in actorCatDebugToNormal[actorCategory] or (categoryInput == "All"))
 
+            # add the actor if we have a match, else remove it,
+            # check if the actor is already in the list for both case
             if isInputInName:
                 if not actorName in results:
                     results.append(actorName)
@@ -47,6 +55,7 @@ def findActors(actorRoot: ET.Element, searchInput: str, categoryInput: str):
 
 
 def findCategories(actorRoot: ET.Element):
+    """Returns every categories"""
     results = ["All"]
 
     for actor in actorRoot:
@@ -58,49 +67,52 @@ def findCategories(actorRoot: ET.Element):
     return results
 
 
-# Component Manager
-
-# Get/Set
+### [Component Manager] ###
 
 
-def getActorIDFromType(actorRoot: ET.Element, actorType):
+def getActorIDFromName(actorRoot: ET.Element, actorName: str):
+    """Returns an actor's ID from its name"""
     for actor in actorRoot:
-        if actor.tag == "Actor" and actorType == actor.get("Name"):
+        if actor.tag == "Actor" and actorName == actor.get("Name"):
             return actor.get("ID")
     return
 
 
-def getActorTypeList(actorRoot: ET.Element, actorID: str):
+def getActorItemList(actorRoot: ET.Element, actorID: str, listName: str):
+    """Returns an actor's type list or enum node content"""
     return [
         item.text
         for actor in actorRoot
         if actorID == actor.get("ID")
         for elem in actor
-        if elem.tag == "Type"
+        if elem.tag == listName
         for item in elem
     ]
 
 
-def getActorType(selectedType: str, actorRoot: ET.Element):
+def getActorEnumParamValue(actorRoot: ET.Element, selectedType: str, actorID: str, elemTag: str):
+    """Returns an actor's type list or enum param value"""
+    valueName = "Params" if elemTag == "Type" else "Value"
     for actor in actorRoot:
-        for elem in actor:
-            if elem.tag == "Type":
-                for item in elem:
-                    if selectedType == item.text:
-                        return actor.get("Params")
+        if actor.get("ID") == actorID:
+            for elem in actor:
+                if elem.tag == elemTag:
+                    identifier = elem.text if elemTag == "Type" else "Name"
+                    for item in elem:
+                        if selectedType == item.get(identifier):
+                            return item.get(valueName)
     return
 
 
-def getList(actorRoot: ET.Element, listName: str):
+def getListItems(actorRoot: ET.Element, listName: str):
+    """Returns a <List> node item list"""
     return [
         elem.get("Name") for list in actorRoot if list.tag == "List" and (list.get("Name") == listName) for elem in list
     ]
 
 
-# Components Processor
-
-
 def addLabel(self, objName: str, text: str):
+    """Creates and returns a new label widget"""
     label = QLabel(self.paramGroup)
     label.setObjectName(objName)
     label.setText(text)
@@ -108,6 +120,7 @@ def addLabel(self, objName: str, text: str):
 
 
 def addComboBox(self, objName: str, labelName: str, text: str, items: list):
+    """Creates a combo box widget and add it to the UI with the corresponding label name"""
     comboBox = QComboBox(self.paramGroup)
     comboBox.setObjectName(objName)
     comboBox.addItems(items)
@@ -117,6 +130,7 @@ def addComboBox(self, objName: str, labelName: str, text: str, items: list):
 
 
 def addLineEdit(self, objName: str, labelName: str, text: str):
+    """Creates a line edit widget and add it to the UI with the corresponding label name"""
     lineEdit = QLineEdit(self.paramGroup)
     lineEdit.setObjectName(objName)
     label = addLabel(self, labelName, text)
@@ -125,6 +139,7 @@ def addLineEdit(self, objName: str, labelName: str, text: str):
 
 
 def addCheckBox(self, objName: str, labelName: str, text: str):
+    """Creates a check box widget and add it to the UI with the corresponding label name"""
     checkBox = QCheckBox(self.paramGroup)
     checkBox.setObjectName(objName)
     label = addLabel(self, labelName, text)
@@ -133,18 +148,20 @@ def addCheckBox(self, objName: str, labelName: str, text: str):
 
 
 def clearParamLayout(self):
+    """Removes every widget from the form on the UI"""
     while self.paramLayout.rowCount():
         self.paramLayout.removeRow(0)
 
 
-# Actor Processor
+### [Actor Processor] ###
 
 
 def initActorTypeBox(self, actorRoot):
+    """Adds items to the type combo box"""
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         self.actorTypeList.clear()
-        actorTypes = getActorTypeList(actorRoot, getActorIDFromType(actorRoot, selectedItem.text()))
+        actorTypes = getActorItemList(actorRoot, getActorIDFromName(actorRoot, selectedItem.text()), "Type")
         if actorTypes is not None and (len(actorTypes) > 0):
             self.actorTypeList.addItems(actorTypes)
             self.actorTypeList.setEnabled(True)
@@ -153,6 +170,7 @@ def initActorTypeBox(self, actorRoot):
 
 
 def processActor(self, actorRoot: ET.Element):
+    """Adds needed widgets to the UI's form"""
     items = None
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
@@ -167,22 +185,14 @@ def processActor(self, actorRoot: ET.Element):
 
                         if elem.tag == "Flag":
                             labelText = f"{elem.get('Type')} Flag"
-                        elif elem.tag == "ChestContent":
-                            labelText = "Chest Content"
-                            items = [
-                                item.get("Name")
-                                for list in actorRoot
-                                if (list.tag == "List") and (list.get("Name") == labelText)
-                                for item in list
-                            ]
-                        elif elem.tag == "Collectible":
-                            labelText = "Collectibles"
-                            items = [
-                                item.get("Name")
-                                for list in actorRoot
-                                if (list.tag == "List") and (list.get("Name") == labelText)
-                                for item in list
-                            ]
+                        elif elem.tag in ["ChestContent", "Collectible", "Message"]:
+                            if elem.tag == "ChestContent":
+                                labelText = "Chest Content"
+                            elif elem.tag == "Collectible":
+                                labelText = "Collectibles"
+                            elif elem.tag == "Message":
+                                labelText = "Elf_Msg Message ID"
+                            items = getListItems(actorRoot, labelText)
 
                         if widgetType == "ComboBox":
                             if items is None:

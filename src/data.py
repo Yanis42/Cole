@@ -1,7 +1,4 @@
-try:
-    uiFile = "res/MainWindow.ui"
-except FileNotFoundError:
-    print("[COLE:ERROR]: File ``MainWindow.ui`` not found!")
+uiFile = "res/MainWindow.ui"
 
 actorRoot = None
 
