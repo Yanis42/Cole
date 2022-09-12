@@ -1,21 +1,12 @@
-from sys import exit, argv
 from pathlib import Path
 from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
+from sys import exit, argv
 from data import uiFile, actorRoot
-from functions import (
-    getRoot,
-    findActors,
-    findCategories,
-    initActorTypeBox,
-    clearParamLayout,
-    processActor,
-    initParamWidgets,
-    resetUI,
-    writeActorFile,
-    removeActor,
-)
+from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor
+from functions.getters import getRoot, getActors, getCategories
+from functions.general import clearParamLayout, resetUI, writeActorFile
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -44,7 +35,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def initComponents(self):
         """Initialise the UI widgets"""
         self.actorCategoryList.clear()
-        self.actorCategoryList.addItems(findCategories(actorRoot))
+        self.actorCategoryList.addItems(getCategories(actorRoot))
         self.searchBoxOnUpdate()
         self.paramLayout.setHorizontalSpacing(50)
         self.ignoreTiedBox.setHidden(True)
@@ -54,7 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def searchBoxOnUpdate(self):
         """Called everytime the search box is updated"""
-        searchResults = findActors(actorRoot, self.searchBox.text(), self.actorCategoryList.currentText())
+        searchResults = getActors(actorRoot, self.searchBox.text(), self.actorCategoryList.currentText())
         self.actorFoundBox.clear()
         self.actorFoundBox.addItems(searchResults)
         self.actorFoundLabel.setText(f"Found: {len(searchResults)}")
