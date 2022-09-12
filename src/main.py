@@ -93,6 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
 
+
 # start the app
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)

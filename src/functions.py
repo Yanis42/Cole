@@ -96,8 +96,8 @@ def resetUI(self):
 
 def writeActorFile(actorRoot: ET.Element, path: str):
     """Write the file to save to path"""
-    xmlStr = MD.parseString(ET.tostring(actorRoot)).toprettyxml(indent="  ", encoding='UTF-8')
-    xmlStr = b'\n'.join([s for s in xmlStr.splitlines() if s.strip()])
+    xmlStr = MD.parseString(ET.tostring(actorRoot)).toprettyxml(indent="  ", encoding="UTF-8")
+    xmlStr = b"\n".join([s for s in xmlStr.splitlines() if s.strip()])
     try:
         with open(path, "bw") as file:
             file.write(xmlStr)
