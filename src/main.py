@@ -8,6 +8,7 @@ from functions import (
     initActorTypeBox,
     clearParamLayout,
     processActor,
+    initParamWidgets,
 )
 
 
@@ -37,6 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.searchBoxOnUpdate()
         self.paramLayout.setHorizontalSpacing(50)
         self.ignoreTiedBox.setHidden(True)
+        initParamWidgets(self, actorRoot)
 
     # connections callbacks
 

@@ -2,6 +2,8 @@ uiFile = "res/MainWindow.ui"
 
 actorRoot = None
 
+paramWidgets = []
+
 actorCatDebugToNormal = {
     "ACTORCAT_SWITCH": "Switch",
     "ACTORCAT_BG": "BG Actor",

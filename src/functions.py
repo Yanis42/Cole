@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET
-from PyQt6.QtWidgets import QFileDialog, QLabel, QComboBox, QLineEdit, QCheckBox
+from PyQt6.QtWidgets import QFileDialog, QLabel, QComboBox, QLineEdit, QCheckBox, QFormLayout
 from pathlib import Path
-from data import actorCatDebugToNormal, subElemTags, tagToWidget
+from data import actorCatDebugToNormal, subElemTags, tagToWidget, paramWidgets
 
 
 def getRoot(xmlFile: str):
@@ -111,11 +111,20 @@ def getListItems(actorRoot: ET.Element, listName: str):
     ]
 
 
+def getWidgetFromName(objName: str):
+    """Returns the label and the corresponding widget"""
+    global paramWidgets
+    for elem in paramWidgets:
+        if objName in elem[0]:
+            return elem[1], elem[2]
+
+
 def addLabel(self, objName: str, text: str):
     """Creates and returns a new label widget"""
     label = QLabel(self.paramGroup)
     label.setObjectName(objName)
     label.setText(text)
+    label.setHidden(True)
     return label
 
 
@@ -125,7 +134,8 @@ def addComboBox(self, objName: str, labelName: str, text: str, items: list):
     comboBox.setObjectName(objName)
     comboBox.addItems(items)
     label = addLabel(self, labelName, text)
-    self.paramLayout.addRow(label, comboBox)
+    addWidgetToList(objName, label, comboBox)
+    comboBox.setHidden(True)
     return comboBox
 
 
@@ -134,7 +144,8 @@ def addLineEdit(self, objName: str, labelName: str, text: str):
     lineEdit = QLineEdit(self.paramGroup)
     lineEdit.setObjectName(objName)
     label = addLabel(self, labelName, text)
-    self.paramLayout.addRow(label, lineEdit)
+    addWidgetToList(objName, label, lineEdit)
+    lineEdit.setHidden(True)
     return lineEdit
 
 
@@ -143,14 +154,34 @@ def addCheckBox(self, objName: str, text: str):
     checkBox = QCheckBox(self.paramGroup)
     checkBox.setObjectName(objName)
     checkBox.setText(text)
-    self.paramLayout.addRow(checkBox, None)
+    addWidgetToList(objName, None, checkBox)
+    checkBox.setHidden(True)
     return checkBox
+
+
+def addWidgetToList(objName: str, label: QLabel, widget):
+    global paramWidgets
+    if len(paramWidgets) > 0:
+        for elem in paramWidgets:
+            if not (objName == elem[0]):
+                paramWidgets.append((objName, label, widget))
+                break
+    else:
+        paramWidgets.append((objName, label, widget))
 
 
 def clearParamLayout(self):
     """Removes every widget from the form on the UI"""
+    # get the widget of the current row, hide it, move on the next row
+    # hide the other widget then remove the row (without deleting the widgets)
     while self.paramLayout.rowCount():
-        self.paramLayout.removeRow(0)
+        label = self.paramLayout.itemAt(0, QFormLayout.ItemRole.LabelRole)
+        widget = self.paramLayout.itemAt(0, QFormLayout.ItemRole.FieldRole)
+        if label is not None:
+            label.widget().setHidden(True)
+        if widget is not None:
+            widget.widget().setHidden(True)
+        self.paramLayout.takeRow(0)
 
 
 ### [Actor Processor] ###
@@ -169,9 +200,40 @@ def initActorTypeBox(self, actorRoot):
             self.actorTypeList.setEnabled(False)
 
 
+def initParamWidgets(self, actorRoot: ET.Element):
+    """Creates necessary widgets for every parameter"""
+    items = None
+    for actor in actorRoot:
+        for elem in actor:
+            if elem.tag in subElemTags:
+                widgetType = tagToWidget[elem.tag]
+                objName = f"{actor.get('Key')}_{widgetType}{elem.get('Index')}"
+                labelName = f"{objName}Label"
+                labelText = elem.get("Name")
+
+                if elem.tag == "Flag":
+                    labelText = f"{elem.get('Type')} Flag"
+                elif elem.tag in ["ChestContent", "Collectible", "Message"]:
+                    if elem.tag == "ChestContent":
+                        labelText = "Chest Content"
+                    elif elem.tag == "Collectible":
+                        labelText = "Collectibles"
+                    elif elem.tag == "Message":
+                        labelText = "Elf_Msg Message ID"
+                    items = getListItems(actorRoot, labelText)
+
+                if widgetType == "ComboBox":
+                    if items is None:
+                        items = [item.get("Name") for item in elem]
+                    addComboBox(self, objName, labelName, labelText, items)
+                elif widgetType == "LineEdit":
+                    addLineEdit(self, objName, labelName, labelText)
+                elif widgetType == "CheckBox":
+                    addCheckBox(self, objName, labelText)
+
+
 def processActor(self, actorRoot: ET.Element):
     """Adds needed widgets to the UI's form"""
-    items = None
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         typeParam = getActorEnumParamValue(
@@ -186,9 +248,7 @@ def processActor(self, actorRoot: ET.Element):
                 for elem in actor:
                     if elem.tag in subElemTags:
                         widgetType = tagToWidget[elem.tag]
-                        objName = f"{actor.get('Key')}{widgetType}"
-                        labelName = f"{objName}Label"
-                        labelText = elem.get("Name")
+                        objName = f"{actor.get('Key')}_{widgetType}{elem.get('Index')}"
                         tiedTypeList = elem.get("TiedActorTypes")
 
                         if tiedTypeList is None:
@@ -196,24 +256,16 @@ def processActor(self, actorRoot: ET.Element):
                         else:
                             self.ignoreTiedBox.setHidden(False)
 
-                        if elem.tag == "Flag":
-                            labelText = f"{elem.get('Type')} Flag"
-                        elif elem.tag in ["ChestContent", "Collectible", "Message"]:
-                            if elem.tag == "ChestContent":
-                                labelText = "Chest Content"
-                            elif elem.tag == "Collectible":
-                                labelText = "Collectibles"
-                            elif elem.tag == "Message":
-                                labelText = "Elf_Msg Message ID"
-                            items = getListItems(actorRoot, labelText)
-
-                        if tiedTypeList is None or typeParam in tiedTypeList.split(",") or self.ignoreTiedBox.isChecked():
-                            if widgetType == "ComboBox":
-                                if items is None:
-                                    items = [item.get("Name") for item in elem]
-                                addComboBox(self, objName, labelName, labelText, items)
-                            elif widgetType == "LineEdit":
-                                addLineEdit(self, objName, labelName, labelText)
-                            elif widgetType == "CheckBox":
-                                addCheckBox(self, objName, labelText)
+                        if (
+                            tiedTypeList is None
+                            or typeParam in tiedTypeList.split(",")
+                            or self.ignoreTiedBox.isChecked()
+                        ):
+                            label, widget = getWidgetFromName(objName)
+                            widget.setHidden(False)
+                            if label is None:
+                                self.paramLayout.addRow(widget, None)
+                            else:
+                                label.setHidden(False)
+                                self.paramLayout.addRow(label, widget)
                 break
