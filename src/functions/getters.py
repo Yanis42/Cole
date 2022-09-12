@@ -1,7 +1,8 @@
 from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QFileDialog
 from pathlib import Path
-from data import actorCatDebugToNormal, paramWidgets
+from ast import parse, Expression, Num, UnaryOp, USub, Invert, BinOp
+from data import actorCatDebugToNormal, paramWidgets, binOps
 
 
 def getRoot(xmlFile: str):
@@ -89,7 +90,6 @@ def getActorItemList(actorRoot: ET.Element, actorID: str, listName: str):
 
 def getActorEnumParamValue(actorRoot: ET.Element, selectedType: str, actorID: str, elemTag: str):
     """Returns an actor's type list or enum param value"""
-    valueName = "Params" if elemTag == "Type" else "Value"
     for actor in actorRoot:
         if actor.get("ID") == actorID:
             for elem in actor:
@@ -97,7 +97,10 @@ def getActorEnumParamValue(actorRoot: ET.Element, selectedType: str, actorID: st
                     for item in elem:
                         identifier = item.text if (elemTag == "Type") else elem.get("Name")
                         if selectedType == identifier:
-                            return item.get("Params") if (elemTag == "Type") else item.get("Value")
+                            if elemTag == "Type":
+                                return item.get("Params")
+                            else:
+                                return item.get("Value")
     return
 
 
@@ -114,3 +117,55 @@ def getWidgetFromName(objName: str):
     for elem in paramWidgets:
         if objName in elem[0]:
             return elem[1], elem[2]
+
+
+def getShiftFromMask(mask):
+    """Returns the shift value from the mask"""
+
+    # get the shift by subtracting the length of the mask
+    # converted in binary on 16 bits (since the mask can be on 16 bits) with
+    # that length but with the rightmost zeros stripped
+    return int(f"{len(f'{mask:016b}') - len(f'{mask:016b}'.rstrip('0'))}", base=10)
+
+
+def getListValue(actorRoot: ET.Element, listName: str, widget):
+    for list in actorRoot:
+        if list.tag == "List" and list.get("Name") == listName:
+            for item in list:
+                if widget.currentText() == item.get("Name"):
+                    return item.get("Value")
+    return
+
+
+def getEvalParams(params):
+    """
+    Evaluate the params string argument to an integer
+    Raises ValueError if something goes wrong
+    """
+
+    # remove spaces
+    params = params.strip()
+
+    try:
+        node = parse(params, mode="eval")
+    except Exception as e:
+        raise ValueError(f"Could not parse params {params} as an AST.") from e
+
+    def _eval(node):
+        if isinstance(node, Expression):
+            return _eval(node.body)
+        elif isinstance(node, Num):
+            return node.n
+        elif isinstance(node, UnaryOp):
+            if isinstance(node.op, USub):
+                return -_eval(node.operand)
+            elif isinstance(node.op, Invert):
+                return ~_eval(node.operand)
+            else:
+                raise ValueError(f"Unsupported unary operator {node.op}")
+        elif isinstance(node, BinOp):
+            return binOps[type(node.op)](_eval(node.left), _eval(node.right))
+        else:
+            raise ValueError(f"Unsupported AST node {node}")
+
+    return f"0x{_eval(node.body):04X}"

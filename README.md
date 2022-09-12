@@ -11,10 +11,13 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Edit actor parameters to get the hex value
 - Reverse the param process, from hex to values on the UI
 - Add an actor in the list
+- A list on the UI containing the current flags of the scene and warn if one is already used (Ticamus)
 
 ## TODO
 - Avoid reloading the UI when an actor is deleted
 - "Delete All" button (and/or "delete range")
+- Copy line edit content when clicked (CTRL + Left Click)
+- Checkbox to eval or not the parameters
 
 ## How it works
 When the program initialises, it creates all the necessary widgets and then hides them (otherwise you can see them on the UI). Then, when we need to show the widgets, it hides the ones that are currently displayed, removes the row and shows the new widgets on a new row.

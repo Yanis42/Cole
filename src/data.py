@@ -1,8 +1,13 @@
+from ast import Add, Sub, Mult, Div, Mod, LShift, RShift, RShift, BitOr, BitAnd, BitXor
+from operator import add, sub, mul, truediv, mod, lshift, rshift, rshift, or_, and_, xor
+
 uiFile = "res/MainWindow.ui"
 
 actorRoot = None
 
-paramWidgets = []
+# format of both lists: ({identifier}, {label widget}, {parameter widget})
+paramWidgets = []  # contains every parameter widget
+shownWidgets = []  # contains every parameter widget that are currently displayed
 
 actorCatDebugToNormal = {
     "ACTORCAT_SWITCH": "Switch",
@@ -37,4 +42,18 @@ tagToWidget = {
     "ChestContent": "ComboBox",
     "Collectible": "ComboBox",
     "Message": "ComboBox",
+}
+
+binOps = {
+    Add: add,
+    Sub: sub,
+    Mult: mul,
+    Div: truediv,
+    Mod: mod,
+    LShift: lshift,
+    RShift: rshift,
+    RShift: rshift,
+    BitOr: or_,
+    BitAnd: and_,
+    BitXor: xor,
 }

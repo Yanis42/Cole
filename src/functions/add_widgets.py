@@ -19,6 +19,8 @@ def addComboBox(self, objName: str, labelName: str, text: str, items: list):
     label = addLabel(self, labelName, text)
     addWidgetToList(objName, label, comboBox)
     comboBox.setHidden(True)
+    comboBox.setCurrentIndex(0)
+    comboBox.currentTextChanged.connect(self.paramOnUpdate)
     return comboBox
 
 
@@ -29,6 +31,8 @@ def addLineEdit(self, objName: str, labelName: str, text: str):
     label = addLabel(self, labelName, text)
     addWidgetToList(objName, label, lineEdit)
     lineEdit.setHidden(True)
+    lineEdit.setText("0x0")
+    lineEdit.editingFinished.connect(self.paramOnUpdate)
     return lineEdit
 
 
@@ -39,6 +43,7 @@ def addCheckBox(self, objName: str, text: str):
     checkBox.setText(text)
     addWidgetToList(objName, None, checkBox)
     checkBox.setHidden(True)
+    checkBox.stateChanged.connect(self.paramOnUpdate)
     return checkBox
 
 

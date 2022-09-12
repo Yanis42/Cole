@@ -3,9 +3,9 @@ from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
-from data import uiFile, actorRoot
-from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor
-from functions.getters import getRoot, getActors, getCategories
+from data import uiFile, actorRoot, shownWidgets
+from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor, updateParameters
+from functions.getters import getRoot, getActors, getCategories, getEvalParams
 from functions.general import clearParamLayout, resetUI, writeActorFile
 
 
@@ -32,6 +32,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.saveActorFileBtn.clicked.connect(self.saveActorFile)
         # self.addActorBtn.clicked.connect()
         self.deleteActorBtn.clicked.connect(self.deleteActor)
+        self.evalParamBox.stateChanged.connect(self.evalOnUpdate)
 
     def initComponents(self):
         """Initialise the UI widgets"""
@@ -54,11 +55,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def foundBoxOnUpdate(self):
         """Called everytime a new actor is chosen"""
         initActorTypeBox(self, actorRoot)
+        self.paramBox.setText("0x0")
+        self.rotXBox.setText("0x0")
+        self.rotYBox.setText("0x0")
+        self.rotZBox.setText("0x0")
 
     def typeBoxOnUpdate(self):
         """Called everytime the actor type is changed"""
         clearParamLayout(self)
         processActor(self, actorRoot)
+        self.paramOnUpdate()
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
@@ -86,6 +92,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
         self.setWindowTitle(f"{self.title} (unsaved changes)")
+
+    def paramOnUpdate(self):
+        """Called everytime a parameter widget is updated"""
+        updateParameters(self, actorRoot)
+        if self.evalParamBox.isChecked():
+            self.evalOnUpdate()
+
+    def evalOnUpdate(self):
+        """Called everytime the eval checkbox is updated"""
+        if self.actorFoundBox.currentRow() >= 0:
+            if self.evalParamBox.isChecked():
+                self.paramBox.setText(getEvalParams(self.paramBox.text()))
+                self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
+                self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
+                self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
+            else:
+                updateParameters(self, actorRoot)
 
 
 # start the app
