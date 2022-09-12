@@ -12,6 +12,11 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Delete an actor of the list
 - Button to change the actor file
 
+## How it works
+When the program initialises, it creates all the necessary widgets and then hides them (otherwise you can see them on the UI). Then, when we need to show the widgets, it hides the ones that are currently displayed, removes the row and shows the new widgets on a new row.
+
+Basically, it's like the way Blender works with PR #56, generating everything on initialisation and then showing/hiding as needed.
+
 ## Requirements
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
 - PyQt6
