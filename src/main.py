@@ -19,6 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi(uiFile, self)
         self.initConnections()
         self.initComponents()
+        self.title = self.windowTitle()
 
     def initConnections(self):
         """Links the widgets to their callback function"""
@@ -75,6 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
         path = QFileDialog.getSaveFileName(None, "Save File", defaultDir, "*.xml")[0]
         if len(path):
             writeActorFile(actorRoot, path)
+            self.setWindowTitle(f"{self.title}")
 
     def deleteActor(self):
         """Called everytime the 'delete actor' button is clicked"""
@@ -83,6 +85,7 @@ class MainWindow(QtWidgets.QMainWindow):
         resetUI(self)
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
+        self.setWindowTitle(f"{self.title} (unsaved changes)")
 
 
 # start the app

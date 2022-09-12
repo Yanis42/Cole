@@ -13,7 +13,6 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Add an actor in the list
 
 ## TODO
-- Add a ``*`` on the UI's title when the actor list is edited
 - Avoid reloading the UI when an actor is deleted
 - "Delete All" button (and/or "delete range")
 
