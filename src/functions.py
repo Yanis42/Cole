@@ -242,7 +242,8 @@ def processActor(self, actorRoot: ET.Element):
         for actor in actorRoot:
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
-                    label = addLabel(self, "noParamLabel", "This actor doesn't have parameters")
+                    label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
+                    label.setHidden(False)
                     self.paramLayout.addRow(label, None)
                     break
                 for elem in actor:
