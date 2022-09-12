@@ -1,4 +1,5 @@
 from xml.etree import ElementTree as ET
+from xml.dom import minidom as MD
 from PyQt6.QtWidgets import QFileDialog, QLabel, QComboBox, QLineEdit, QCheckBox, QFormLayout
 from pathlib import Path
 from data import actorCatDebugToNormal, subElemTags, tagToWidget, paramWidgets
@@ -12,7 +13,7 @@ def getRoot(xmlFile: str):
         print(f"[COLE:ERROR]: File ``{xmlFile}`` not found!")
         defaultDir = str(Path.home())
         fname = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")
-        root = ET.parse(fname[0]).getroot()
+        root = getRoot(fname[0])
 
     return root
 
@@ -65,6 +66,52 @@ def findCategories(actorRoot: ET.Element):
                 results.append(category)
 
     return results
+
+
+def deleteWidgets(self):
+    """Deletes every widget from the list"""
+    global paramWidgets
+    for elem in paramWidgets:
+        for widget in elem:
+            if widget is not None and not isinstance(widget, str):
+                widget.deleteLater()
+    if len(paramWidgets):
+        paramWidgets = []
+
+
+def resetUI(self):
+    """Back to init state"""
+    self.actorFoundBox.clear()
+    self.actorCategoryList.clear()
+    self.actorTypeList.clear()
+    self.paramBox.setText("")
+    self.rotXBox.setText("")
+    self.rotYBox.setText("")
+    self.rotZBox.setText("")
+    self.actorFoundLabel.setText("Found: 0")
+    self.ignoreTiedBox.setHidden(True)
+    self.ignoreTiedBox.setChecked(False)
+    deleteWidgets(self)
+
+
+def writeActorFile(actorRoot: ET.Element, path: str):
+    """Write the file to save to path"""
+    xmlStr = MD.parseString(ET.tostring(actorRoot)).toprettyxml(indent="  ", encoding='UTF-8')
+    xmlStr = b'\n'.join([s for s in xmlStr.splitlines() if s.strip()])
+    try:
+        with open(path, "bw") as file:
+            file.write(xmlStr)
+    except:
+        print("ERROR: The file can't be written. Update the permissions, this folder is probably read-only.")
+
+
+def removeActor(self, actorRoot: ET.Element):
+    actorName = self.actorFoundBox.currentItem()
+    if actorName is not None:
+        actorName = actorName.text()
+        for actor in actorRoot:
+            if actor.get("Name") == actorName:
+                actorRoot.remove(actor)
 
 
 ### [Component Manager] ###
