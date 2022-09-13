@@ -128,6 +128,7 @@ def getShiftFromMask(mask):
 
 
 def getListValue(actorRoot: ET.Element, listName: str, widget):
+    """Returns the value from a <List> node"""
     for list in actorRoot:
         if list.tag == "List" and list.get("Name") == listName:
             for item in list:
@@ -174,6 +175,7 @@ def getEvalParams(params):
 
 
 def getFormattedParams(mask: int, value: str, isBool: bool):
+    """Returns the parameter with the correct format"""
     shift = getShiftFromMask(mask) if mask is not None else 0
 
     if not isBool:
@@ -186,10 +188,16 @@ def getFormattedParams(mask: int, value: str, isBool: bool):
 
 
 def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: list):
+    """Returns a list of the parameters for a specific target for widgets which are displayed"""
+    # this function should be called when we know for sure it's the right actor
     params = []
     name = None
+
+    # iterates through the sub-elements of the actor
     for elem in actor:
+        # we don't want <Type> and <Notes>
         if not (elem.tag == "Type") and not (elem.tag == "Notes"):
+            # iterate through the displayed widgets
             for (objName, label, widget, curTarget) in shownWidgets:
                 name = f"{actor.get('Key')}_{tagToWidget[elem.tag]}{elem.get('Index')}"
                 enumParam = (
@@ -197,7 +205,10 @@ def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: 
                     if (objName == name) and "ComboBox" in objName
                     else "0x0"
                 )
+
+                # get the value for each widget on screen
                 if (objName == name) and (elem.get("Target", "Params") == curTarget == target):
+                    # get the param value of this widget then add it to the list
                     value = None
                     mask = int(elem.get("Mask", "0x0"), base=16)
                     if elem.tag == "ChestContent" or elem.tag == "Collectible" or elem.tag == "Message":
@@ -216,10 +227,13 @@ def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: 
 
                     if not value in params:
                         params.append(value)
+    # remove unnecessary elements
     return getFilteredParams(params)
 
 
 def getFilteredParams(params: list):
+    """Returns the list of parameters without useless elements"""
+    # removes every "0" parameter
     for param in params:
         if int(getEvalParams(param), base=16) == 0:
             params.remove(param)

@@ -44,6 +44,7 @@ tagToWidget = {
     "Message": "ComboBox",
 }
 
+# binary operators for the eval function
 binOps = {
     Add: add,
     Sub: sub,

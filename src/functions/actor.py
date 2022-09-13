@@ -114,12 +114,15 @@ def removeActor(self, actorRoot: ET.Element):
 
 
 def updateParameters(self, actorRoot: ET.Element):
+    """Updates the parameters from the 4 line edits"""
     global shownWidgets
     listName = listValue = None
     targetList = ["Params", "XRot", "YRot", "ZRot"]
     selectedItem = self.actorFoundBox.currentItem()
     actorID = getActorIDFromName(actorRoot, selectedItem.text())
 
+    # get the value of the chest content, collectible or message id combo box
+    # bug if multiple lists in one actor?
     for (objName, label, widget, curTarget) in shownWidgets:
         if label is not None and isinstance(widget, QComboBox):
             if isinstance(label, QLabel):
@@ -134,6 +137,8 @@ def updateParameters(self, actorRoot: ET.Element):
 
     listValue = listValue if not listValue is None else "0x0"
     for actor in actorRoot:
+        # for each displayed widgets, get the param value, format it, remove useless elements
+        # then generate a string out of the list and set that to the correct line edit widget
         typeParam = (
             getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
             if self.actorTypeList.isEnabled()
