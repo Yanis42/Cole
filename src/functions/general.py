@@ -12,8 +12,7 @@ def deleteWidgets(self):
         for widget in elem:
             if widget is not None and not isinstance(widget, str):
                 widget.deleteLater()
-    if len(paramWidgets):
-        paramWidgets = []
+    paramWidgets.clear()
 
 
 def resetUI(self):

@@ -3,7 +3,7 @@ from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
-from data import uiFile, actorRoot, shownWidgets
+from data import uiFile, actorRoot
 from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor, updateParameters
 from functions.getters import getRoot, getActors, getCategories, getEvalParams
 from functions.general import clearParamLayout, resetUI, writeActorFile, copyToClipboard
@@ -37,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rotXLabel.clicked.connect(self.copyRotX)
         self.rotYLabel.clicked.connect(self.copyRotY)
         self.rotZLabel.clicked.connect(self.copyRotZ)
+        self.deleteAllBtn.clicked.connect(self.deleteAll)
 
     def initComponents(self):
         """Initialise the UI widgets"""
@@ -102,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def deleteActor(self):
         """Called everytime the 'delete actor' button is clicked"""
         index = self.actorFoundBox.currentRow()
-        removeActor(self, actorRoot)
+        removeActor(self.actorFoundBox.currentItem(), actorRoot)
         resetUI(self)
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
@@ -144,6 +145,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def copyRotZ(self):
         """Called when the user clicks on a parameter 'label'"""
         copyToClipboard(self.rotZBox.text())
+
+    def deleteAll(self):
+        """Called when the user wants to delete every actors"""
+        actor = actorRoot[0]
+        if actor.tag == "Actor":
+            actorRoot.remove(actor)
+            self.deleteAll()
+            return
+        resetUI(self)
+        self.initComponents()
+        self.setWindowTitle(f"{self.title} (unsaved changes)")
 
 
 # start the app

@@ -171,7 +171,7 @@ def getEvalParams(params):
         else:
             raise ValueError(f"Unsupported AST node {node}")
 
-    return f"0x{_eval(node.body):04X}"
+    return f"0x{_eval(node.body):X}"
 
 
 def getFormattedParams(mask: int, value: str, isBool: bool):

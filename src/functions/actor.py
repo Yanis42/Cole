@@ -64,8 +64,8 @@ def processActor(self, actorRoot: ET.Element):
     global shownWidgets
     shownWidgets = []
     selectedItem = self.actorFoundBox.currentItem()
-    actorID = getActorIDFromName(actorRoot, selectedItem.text())
     if selectedItem is not None:
+        actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
             typeParam = getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
             if actor.get("Name") == selectedItem.text():
@@ -103,11 +103,10 @@ def processActor(self, actorRoot: ET.Element):
                 break
 
 
-def removeActor(self, actorRoot: ET.Element):
+def removeActor(currentItem, actorRoot: ET.Element):
     """Search for the selected actor then deletes it"""
-    actorName = self.actorFoundBox.currentItem()
-    if actorName is not None:
-        actorName = actorName.text()
+    if currentItem is not None:
+        actorName = currentItem.text()
         for actor in actorRoot:
             if actor.get("Name") == actorName:
                 actorRoot.remove(actor)
@@ -119,47 +118,48 @@ def updateParameters(self, actorRoot: ET.Element):
     listName = listValue = None
     targetList = ["Params", "XRot", "YRot", "ZRot"]
     selectedItem = self.actorFoundBox.currentItem()
-    actorID = getActorIDFromName(actorRoot, selectedItem.text())
+    if selectedItem is not None:
+        actorID = getActorIDFromName(actorRoot, selectedItem.text())
 
-    # get the value of the chest content, collectible or message id combo box
-    # bug if multiple lists in one actor?
-    for (objName, label, widget, curTarget) in shownWidgets:
-        if label is not None and isinstance(widget, QComboBox):
-            if isinstance(label, QLabel):
-                label = label.text()
-            if "Chest Content" in label:
-                listName = label
-            elif "Collectible" in label:
-                listName = "Collectibles"
-            elif "Message" in label:
-                listName = "Elf_Msg Message ID"
-            listValue = getListValue(actorRoot, listName, widget) if listName is not None else "0x0"
+        # get the value of the chest content, collectible or message id combo box
+        # bug if multiple lists in one actor?
+        for (objName, label, widget, curTarget) in shownWidgets:
+            if label is not None and isinstance(widget, QComboBox):
+                if isinstance(label, QLabel):
+                    label = label.text()
+                if "Chest Content" in label:
+                    listName = label
+                elif "Collectible" in label:
+                    listName = "Collectibles"
+                elif "Message" in label:
+                    listName = "Elf_Msg Message ID"
+                listValue = getListValue(actorRoot, listName, widget) if listName is not None else "0x0"
 
-    listValue = listValue if not listValue is None else "0x0"
-    for actor in actorRoot:
-        # for each displayed widgets, get the param value, format it, remove useless elements
-        # then generate a string out of the list and set that to the correct line edit widget
-        typeParam = (
-            getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
-            if self.actorTypeList.isEnabled()
-            else "0000"
-        )
+        listValue = listValue if not listValue is None else "0x0"
+        for actor in actorRoot:
+            # for each displayed widgets, get the param value, format it, remove useless elements
+            # then generate a string out of the list and set that to the correct line edit widget
+            typeParam = (
+                getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
+                if self.actorTypeList.isEnabled()
+                else "0000"
+            )
 
-        if actor.get("ID") == actorID:
-            for target in targetList:
-                params = getParamValue(actor, target, listValue, shownWidgets)
-                paramValue = " | ".join(params) if len(params) > 0 else "0x0"
+            if actor.get("ID") == actorID:
+                for target in targetList:
+                    params = getParamValue(actor, target, listValue, shownWidgets)
+                    paramValue = " | ".join(params) if len(params) > 0 else "0x0"
 
-                if target == "Params":
-                    paramValue = (
-                        f"(0x{typeParam} | ({paramValue}))"
-                        if int(getEvalParams(f"0x{typeParam}"), base=16) > 0
-                        else f"({paramValue})"
-                    )
-                    self.paramBox.setText(paramValue)
-                elif target == "XRot":
-                    self.rotXBox.setText(paramValue)
-                elif target == "YRot":
-                    self.rotYBox.setText(paramValue)
-                elif target == "ZRot":
-                    self.rotZBox.setText(paramValue)
+                    if target == "Params":
+                        paramValue = (
+                            f"(0x{typeParam} | ({paramValue}))"
+                            if int(getEvalParams(f"0x{typeParam}"), base=16) > 0
+                            else f"({paramValue})"
+                        )
+                        self.paramBox.setText(paramValue)
+                    elif target == "XRot":
+                        self.rotXBox.setText(paramValue)
+                    elif target == "YRot":
+                        self.rotYBox.setText(paramValue)
+                    elif target == "ZRot":
+                        self.rotZBox.setText(paramValue)
