@@ -65,6 +65,13 @@ class MainWindow(QtWidgets.QMainWindow):
         clearParamLayout(self)
         processActor(self, actorRoot)
         self.paramOnUpdate()
+        
+        enabled = False if self.ignoreTiedBox.isChecked() else True
+        self.evalParamBox.setEnabled(enabled)
+        self.paramBox.setEnabled(enabled)
+        self.rotXBox.setEnabled(enabled)
+        self.rotYBox.setEnabled(enabled)
+        self.rotZBox.setEnabled(enabled)
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
