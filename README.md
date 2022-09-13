@@ -8,6 +8,7 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Button to change the actor file
 - Edit actor parameters to get the hex value
 - Safe ``eval()`` function to avoid any security issues, from [Fast64](https://github.com/fast-64/fast64)
+- Copy the parameters in the clipboard by clicking on the label next the parameter/rotation textbox of your choice
 
 ## Planned Features
 - Reverse the param process, from hex to values on the UI
@@ -17,7 +18,6 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 ## TODO
 - Avoid reloading the UI when an actor is deleted
 - "Delete All" button (and/or "delete range")
-- Copy line edit content when clicked (CTRL + Left Click)
 - Checkbox to eval or not the parameters
 
 ## How it works

@@ -6,7 +6,7 @@ from sys import exit, argv
 from data import uiFile, actorRoot, shownWidgets
 from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor, updateParameters
 from functions.getters import getRoot, getActors, getCategories, getEvalParams
-from functions.general import clearParamLayout, resetUI, writeActorFile
+from functions.general import clearParamLayout, resetUI, writeActorFile, copyToClipboard
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -33,6 +33,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.addActorBtn.clicked.connect()
         self.deleteActorBtn.clicked.connect(self.deleteActor)
         self.evalParamBox.stateChanged.connect(self.evalOnUpdate)
+        self.paramLabel.clicked.connect(self.copyParam)
+        self.rotXLabel.clicked.connect(self.copyRotX)
+        self.rotYLabel.clicked.connect(self.copyRotY)
+        self.rotZLabel.clicked.connect(self.copyRotZ)
 
     def initComponents(self):
         """Initialise the UI widgets"""
@@ -65,13 +69,17 @@ class MainWindow(QtWidgets.QMainWindow):
         clearParamLayout(self)
         processActor(self, actorRoot)
         self.paramOnUpdate()
-        
+
         enabled = False if self.ignoreTiedBox.isChecked() else True
         self.evalParamBox.setEnabled(enabled)
         self.paramBox.setEnabled(enabled)
         self.rotXBox.setEnabled(enabled)
         self.rotYBox.setEnabled(enabled)
         self.rotZBox.setEnabled(enabled)
+        self.paramLabel.setEnabled(enabled)
+        self.rotXLabel.setEnabled(enabled)
+        self.rotYLabel.setEnabled(enabled)
+        self.rotZLabel.setEnabled(enabled)
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
@@ -120,6 +128,22 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
             else:
                 updateParameters(self, actorRoot)
+
+    def copyParam(self):
+        """Called when the user clicks on a parameter 'label'"""
+        copyToClipboard(self.paramBox.text())
+
+    def copyRotX(self):
+        """Called when the user clicks on a parameter 'label'"""
+        copyToClipboard(self.rotXBox.text())
+
+    def copyRotY(self):
+        """Called when the user clicks on a parameter 'label'"""
+        copyToClipboard(self.rotYBox.text())
+
+    def copyRotZ(self):
+        """Called when the user clicks on a parameter 'label'"""
+        copyToClipboard(self.rotZBox.text())
 
 
 # start the app

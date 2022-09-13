@@ -1,6 +1,7 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom as MD
 from PyQt6.QtWidgets import QFormLayout
+from PyQt6.QtGui import QGuiApplication
 from data import paramWidgets
 
 
@@ -53,3 +54,10 @@ def writeActorFile(actorRoot: ET.Element, path: str):
             file.write(xmlStr)
     except:
         print("ERROR: The file can't be written. Update the permissions, this folder is probably read-only.")
+
+def copyToClipboard(paramValue: str):
+    """Copies the param value in the system's clipboard"""
+    if not paramValue == "":
+        clipBoard = QGuiApplication.clipboard()
+        clipBoard.clear(clipBoard.Mode.Clipboard)
+        clipBoard.setText(paramValue, clipBoard.Mode.Clipboard)

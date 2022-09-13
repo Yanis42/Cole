@@ -152,7 +152,7 @@ def updateParameters(self, actorRoot: ET.Element):
 
                 if target == "Params":
                     paramValue = (
-                        f"0x{typeParam} | ({paramValue})"
+                        f"(0x{typeParam} | ({paramValue}))"
                         if int(getEvalParams(f"0x{typeParam}"), base=16) > 0
                         else f"({paramValue})"
                     )
