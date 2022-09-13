@@ -6,9 +6,10 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - View an actor's parameter list
 - Delete an actor of the list
 - Button to change the actor file
+- Edit actor parameters to get the hex value
+- Safe ``eval()`` function to avoid any security issues, from [Fast64](https://github.com/fast-64/fast64)
 
 ## Planned Features
-- Edit actor parameters to get the hex value
 - Reverse the param process, from hex to values on the UI
 - Add an actor in the list
 - A list on the UI containing the current flags of the scene and warn if one is already used (Ticamus)
