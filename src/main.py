@@ -103,10 +103,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """Called everytime the eval checkbox is updated"""
         if self.actorFoundBox.currentRow() >= 0:
             if self.evalParamBox.isChecked():
-                self.paramBox.setText(getEvalParams(self.paramBox.text()))
-                self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
-                self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
-                self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
+                if self.paramBox is not None:
+                    self.paramBox.setText(getEvalParams(self.paramBox.text()))
+                if self.rotXBox is not None:
+                    self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
+                if self.rotYBox is not None:
+                    self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
+                if self.rotZBox is not None:
+                    self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
             else:
                 updateParameters(self, actorRoot)
 

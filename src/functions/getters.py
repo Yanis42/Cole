@@ -2,7 +2,7 @@ from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QFileDialog
 from pathlib import Path
 from ast import parse, Expression, Num, UnaryOp, USub, Invert, BinOp
-from data import actorCatDebugToNormal, paramWidgets, binOps
+from data import actorCatDebugToNormal, paramWidgets, binOps, tagToWidget
 
 
 def getRoot(xmlFile: str):
@@ -88,19 +88,18 @@ def getActorItemList(actorRoot: ET.Element, actorID: str, listName: str):
     ]
 
 
-def getActorEnumParamValue(actorRoot: ET.Element, selectedType: str, actorID: str, elemTag: str):
+def getActorEnumParamValue(actor: ET.Element, selectedType: str, actorID: str, elemTag: str):
     """Returns an actor's type list or enum param value"""
-    for actor in actorRoot:
-        if actor.get("ID") == actorID:
-            for elem in actor:
-                if elem.tag == elemTag:
-                    for item in elem:
-                        identifier = item.text if (elemTag == "Type") else elem.get("Name")
-                        if selectedType == identifier:
-                            if elemTag == "Type":
-                                return item.get("Params")
-                            else:
-                                return item.get("Value")
+    if actor.get("ID") == actorID:
+        for elem in actor:
+            if elem.tag == elemTag:
+                for item in elem:
+                    identifier = item.text if (elemTag == "Type") else item.get("Name")
+                    if selectedType == identifier:
+                        if elemTag == "Type":
+                            return item.get("Params")
+                        else:
+                            return item.get("Value")
     return
 
 
@@ -143,6 +142,9 @@ def getEvalParams(params):
     Raises ValueError if something goes wrong
     """
 
+    if params is None or "None" in params:
+        return "0x0"
+
     # remove spaces
     params = params.strip()
 
@@ -169,3 +171,56 @@ def getEvalParams(params):
             raise ValueError(f"Unsupported AST node {node}")
 
     return f"0x{_eval(node.body):04X}"
+
+
+def getFormattedParams(mask: int, value: str, isBool: bool):
+    shift = getShiftFromMask(mask) if mask is not None else 0
+
+    if not isBool:
+        if shift > 0:
+            return f"(({value} << {shift}) & 0x{mask:04X})"
+        else:
+            return f"({value} & 0x{mask:04X})"
+    else:
+        return f"({value} << {shift})"
+
+
+def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: list):
+    params = []
+    name = None
+    for elem in actor:
+        if not (elem.tag == "Type") and not (elem.tag == "Notes"):
+            for (objName, label, widget, curTarget) in shownWidgets:
+                name = f"{actor.get('Key')}_{tagToWidget[elem.tag]}{elem.get('Index')}"
+                enumParam = (
+                    getActorEnumParamValue(actor, widget.currentText(), actor.get("ID"), "Enum")
+                    if (objName == name) and "ComboBox" in objName
+                    else "0x0"
+                )
+                if (objName == name) and (elem.get("Target", "Params") == curTarget == target):
+                    value = None
+                    mask = int(elem.get("Mask", "0x0"), base=16)
+                    if elem.tag == "ChestContent" or elem.tag == "Collectible" or elem.tag == "Message":
+                        value = listValue
+                    elif elem.tag == "Enum":
+                        value = enumParam if enumParam is not None else "0x0"
+                    elif (elem.tag == "Property") or (elem.tag == "Flag"):
+                        value = widget.text()
+                    elif elem.tag == "Bool":
+                        value = "1" if widget.isChecked() else "0"
+
+                    if not (value == "0" or value == "1"):
+                        value = getFormattedParams(mask, value, False)
+                    else:
+                        value = getFormattedParams(mask, value, True)
+
+                    if not value in params:
+                        params.append(value)
+    return getFilteredParams(params)
+
+
+def getFilteredParams(params: list):
+    for param in params:
+        if int(getEvalParams(param), base=16) == 0:
+            params.remove(param)
+    return params

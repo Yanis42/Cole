@@ -1,13 +1,15 @@
 from xml.etree import ElementTree as ET
+from PyQt6.QtWidgets import QComboBox, QLabel
 from data import subElemTags, tagToWidget, shownWidgets
 from .add_widgets import addLabel, addComboBox, addLineEdit, addCheckBox
 from .getters import (
     getActorItemList,
     getActorIDFromName,
+    getEvalParams,
     getListItems,
     getActorEnumParamValue,
     getWidgetFromName,
-    getShiftFromMask,
+    getParamValue,
     getListValue,
 )
 
@@ -27,9 +29,9 @@ def initActorTypeBox(self, actorRoot):
 
 def initParamWidgets(self, actorRoot: ET.Element):
     """Creates necessary widgets for every parameter"""
-    items = None
     for actor in actorRoot:
         for elem in actor:
+            items = None
             if elem.tag in subElemTags:
                 widgetType = tagToWidget[elem.tag]
                 objName = f"{actor.get('Key')}_{widgetType}{elem.get('Index')}"
@@ -48,7 +50,7 @@ def initParamWidgets(self, actorRoot: ET.Element):
                     items = getListItems(actorRoot, labelText)
 
                 if widgetType == "ComboBox":
-                    if items is None:
+                    if elem.tag == "Enum" and items is None:
                         items = [item.get("Name") for item in elem]
                     addComboBox(self, objName, labelName, labelText, items)
                 elif widgetType == "LineEdit":
@@ -62,11 +64,10 @@ def processActor(self, actorRoot: ET.Element):
     global shownWidgets
     shownWidgets = []
     selectedItem = self.actorFoundBox.currentItem()
+    actorID = getActorIDFromName(actorRoot, selectedItem.text())
     if selectedItem is not None:
-        typeParam = getActorEnumParamValue(
-            actorRoot, self.actorTypeList.currentText(), getActorIDFromName(actorRoot, selectedItem.text()), "Type"
-        )
         for actor in actorRoot:
+            typeParam = getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
                     label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
@@ -92,7 +93,7 @@ def processActor(self, actorRoot: ET.Element):
                             label, widget = getWidgetFromName(objName)
                             if widget is not None:
                                 widget.setHidden(False)
-                                shownWidgets.append((objName, label, widget))
+                                shownWidgets.append((objName, label, widget, elem.get("Target", "Params")))
 
                                 if label is None:
                                     self.paramLayout.addRow(widget, None)
@@ -114,92 +115,46 @@ def removeActor(self, actorRoot: ET.Element):
 
 def updateParameters(self, actorRoot: ET.Element):
     global shownWidgets
+    listName = listValue = None
+    targetList = ["Params", "XRot", "YRot", "ZRot"]
     selectedItem = self.actorFoundBox.currentItem()
     actorID = getActorIDFromName(actorRoot, selectedItem.text())
-    listName = None
-    name = None
-    params = []
-    rotX = []
-    rotY = []
-    rotZ = []
 
-    typeParam = (
-        getActorEnumParamValue(actorRoot, self.actorTypeList.currentText(), actorID, "Type")
-        if self.actorTypeList.isEnabled()
-        else "0x0000"
-    )
+    for (objName, label, widget, curTarget) in shownWidgets:
+        if label is not None and isinstance(widget, QComboBox):
+            if isinstance(label, QLabel):
+                label = label.text()
+            if "Chest Content" in label:
+                listName = label
+            elif "Collectible" in label:
+                listName = "Collectibles"
+            elif "Message" in label:
+                listName = "Elf_Msg Message ID"
+            listValue = getListValue(actorRoot, listName, widget) if listName is not None else "0x0"
 
-    for (objName, label, widget) in shownWidgets:
-        enumParam = (
-            getActorEnumParamValue(actorRoot, widget.currentText(), actorID, "Enum")
-            if "ComboBox" in objName
-            else "0x0000"
+    listValue = listValue if not listValue is None else "0x0"
+    for actor in actorRoot:
+        typeParam = (
+            getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
+            if self.actorTypeList.isEnabled()
+            else "0000"
         )
 
-        label = label.text()
-        if "Chest Content" in label:
-            listName = label
-        elif "Collectible" in label:
-            listName = "Collectibles"
-        elif "Message" in label:
-            listName = "Elf_Msg Message ID"
-        if listName is not None:
-            listValue = getListValue(actorRoot, listName, widget)
-        else:
-            listValue = ""
+        if actor.get("ID") == actorID:
+            for target in targetList:
+                params = getParamValue(actor, target, listValue, shownWidgets)
+                paramValue = " | ".join(params) if len(params) > 0 else "0x0"
 
-        for actor in actorRoot:
-            for elem in actor:
-                if elem.tag in subElemTags:
-                    name = f"{actor.get('Key')}_{tagToWidget[elem.tag]}{elem.get('Index')}"
-                if name == objName:
-                    value = None
-                    target = elem.get("Target", "Params")
-                    mask = int(elem.get("Mask", "0x0"), base=16)
-                    shift = getShiftFromMask(mask) if mask is not None else 0
-
-                    if elem.tag == "ChestContent" or elem.tag == "Collectible" or elem.tag == "Message":
-                        if shift > 0:
-                            value = f"(({listValue} << {shift}) & 0x{mask:04X})"
-                        else:
-                            value = f"({listValue} & 0x{mask:04X})"
-                    elif elem.tag == "Enum":
-                        if shift > 0:
-                            value = f"(({typeParam} << {shift}) & 0x{mask:04X})"
-                        else:
-                            value = f"({typeParam} & 0x{mask:04X})"
-                    elif (elem.tag == "Property") or (elem.tag == "Flag"):
-                        if shift > 0:
-                            value = f"(({widget.text()} << {shift}) & 0x{mask:04X})"
-                        else:
-                            value = f"({widget.text()} & 0x{mask:04X})"
-                    elif elem.tag == "Bool":
-                        if widget.isChecked():
-                            value = f"(1 << {shift})"
-                        else:
-                            value = ""
-                    if value is not None:
-                        if (target == "Params") and not value in params:
-                            params.append(value)
-                        elif (target == "XRot") and not value in rotX:
-                            rotX.append(value)
-                        elif (target == "YRot") and not value in rotY:
-                            rotY.append(value)
-                        elif (target == "ZRot") and not value in rotZ:
-                            rotZ.append(value)
-    paramValue = " | ".join(params)
-    rotXValue = " | ".join(rotX)
-    rotYValue = " | ".join(rotY)
-    rotZValue = " | ".join(rotZ)
-    if paramValue == "":
-        paramValue = "0x0"
-    if rotXValue == "":
-        rotXValue = "0x0"
-    if rotYValue == "":
-        rotYValue = "0x0"
-    if rotZValue == "":
-        rotZValue = "0x0"
-    self.paramBox.setText(f"0x{typeParam} | ({paramValue})")
-    self.rotXBox.setText(rotXValue)
-    self.rotYBox.setText(rotYValue)
-    self.rotZBox.setText(rotZValue)
+                if target == "Params":
+                    paramValue = (
+                        f"0x{typeParam} | ({paramValue})"
+                        if int(getEvalParams(f"0x{typeParam}"), base=16) > 0
+                        else f"({paramValue})"
+                    )
+                    self.paramBox.setText(paramValue)
+                elif target == "XRot":
+                    self.rotXBox.setText(paramValue)
+                elif target == "YRot":
+                    self.rotYBox.setText(paramValue)
+                elif target == "ZRot":
+                    self.rotZBox.setText(paramValue)
