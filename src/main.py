@@ -3,6 +3,7 @@ from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
+from os import name as osName
 from data import uiFile, actorRoot
 from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor, updateParameters
 from functions.getters import getRoot, getActors, getCategories, getEvalParams
@@ -20,6 +21,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.initConnections()
         self.initComponents()
         self.title = self.windowTitle()
+
+        # taskbar icon trick for Windows
+        if osName == "nt":
+            from ctypes import windll
+            myappid = u"cole.oot_mod_helper"
+            windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     def initConnections(self):
         """Links the widgets to their callback function"""
