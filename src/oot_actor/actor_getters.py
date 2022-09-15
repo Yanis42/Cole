@@ -1,21 +1,7 @@
 from xml.etree import ElementTree as ET
-from PyQt6.QtWidgets import QFileDialog
-from pathlib import Path
 from ast import parse, Expression, Num, UnaryOp, USub, Invert, BinOp
-from data import actorCatDebugToNormal, paramWidgets, binOps, tagToWidget
-
-
-def getRoot(xmlFile: str):
-    """Try to parse an XML file, opens an 'Open File Dialog' if file not found"""
-    try:
-        root = ET.parse(xmlFile).getroot()
-    except FileNotFoundError:
-        print(f"[COLE:ERROR]: File ``{xmlFile}`` not found!")
-        defaultDir = str(Path.home())
-        fname = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")
-        root = getRoot(fname[0])
-
-    return root
+from cole.data import actorCatDebugToNormal, binOps, tagToWidget
+from cole.getters import getShiftFromMask
 
 
 def getActors(actorRoot: ET.Element, searchInput: str, categoryInput: str):
@@ -52,19 +38,6 @@ def getActors(actorRoot: ET.Element, searchInput: str, categoryInput: str):
             else:
                 if actorName in results:
                     results.remove(actorName)
-    return results
-
-
-def getCategories(actorRoot: ET.Element):
-    """Returns every categories"""
-    results = ["All"]
-
-    for actor in actorRoot:
-        if actor is not None and actor.tag == "Actor":
-            category = actorCatDebugToNormal[actor.get("Category")]
-            if not category in results:
-                results.append(category)
-
     return results
 
 
@@ -110,23 +83,6 @@ def getListItems(actorRoot: ET.Element, listName: str):
     ]
 
 
-def getWidgetFromName(objName: str):
-    """Returns the label and the corresponding widget"""
-    global paramWidgets
-    for elem in paramWidgets:
-        if objName in elem[0]:
-            return elem[1], elem[2]
-
-
-def getShiftFromMask(mask):
-    """Returns the shift value from the mask"""
-
-    # get the shift by subtracting the length of the mask
-    # converted in binary on 16 bits (since the mask can be on 16 bits) with
-    # that length but with the rightmost zeros stripped
-    return int(f"{len(f'{mask:016b}') - len(f'{mask:016b}'.rstrip('0'))}", base=10)
-
-
 def getListValue(actorRoot: ET.Element, listName: str, widget):
     """Returns the value from a <List> node"""
     for list in actorRoot:
@@ -137,7 +93,7 @@ def getListValue(actorRoot: ET.Element, listName: str, widget):
     return
 
 
-def getEvalParams(params):
+def getEvalParams(params: str):
     """
     Evaluate the params string argument to an integer
     Raises ValueError if something goes wrong

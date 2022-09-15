@@ -4,10 +4,20 @@ from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
 from os import name as osName
-from data import uiFile, actorRoot
-from functions.actor import initActorTypeBox, processActor, initParamWidgets, removeActor, updateParameters
-from functions.getters import getRoot, getActors, getCategories, getEvalParams
-from functions.general import clearParamLayout, resetUI, writeActorFile, copyToClipboard
+from cole.data import uiFile, actorRoot
+from cole.getters import getRoot, getCategories
+from oot_actor.actor_getters import getActors, getEvalParams
+from cole.general import copyToClipboard
+from oot_actor.actor import (
+    initActorTypeBox,
+    processActor,
+    initParamWidgets,
+    removeActor,
+    updateParameters,
+    clearParamLayout,
+    resetActorUI,
+    writeActorFile,
+)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -25,7 +35,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # taskbar icon trick for Windows
         if osName == "nt":
             from ctypes import windll
-            myappid = u"cole.oot_mod_helper"
+
+            myappid = "cole.oot_mod_helper".encode("UTF-8")  # encoding probably useless but just in case
             windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     def initConnections(self):
@@ -96,7 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
         path = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")[0]
         if len(path):
             actorRoot = ET.parse(path).getroot()
-            resetUI(self)
+            resetActorUI(self)
             self.initComponents()
 
     def saveActorFile(self):
@@ -111,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Called everytime the 'delete actor' button is clicked"""
         index = self.actorFoundBox.currentRow()
         removeActor(self.actorFoundBox.currentItem(), actorRoot)
-        resetUI(self)
+        resetActorUI(self)
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
         self.setWindowTitle(f"{self.title} (unsaved changes)")
@@ -160,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
             actorRoot.remove(actor)
             self.deleteAll()
             return
-        resetUI(self)
+        resetActorUI(self)
         self.initComponents()
         self.setWindowTitle(f"{self.title} (unsaved changes)")
 

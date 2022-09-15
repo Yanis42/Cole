@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QLabel, QComboBox, QLineEdit, QCheckBox
-from data import paramWidgets
+from cole.data import paramWidgets
 
 
 def addLabel(self, objName: str, text: str):
