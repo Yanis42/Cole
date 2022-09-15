@@ -4,14 +4,13 @@ from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
 from os import name as osName
-from cole.data import uiFile, actorRoot
-from cole.getters import getRoot, getCategories
+from cole.data import uiFile
+from cole.getters import getRoot
 from oot_actor.actor_getters import getActors, getEvalParams
 from cole.general import copyToClipboard
+from oot_actor.actor_init import initActorConnections, initActorComponents, initActorTypeBox
 from oot_actor.actor import (
-    initActorTypeBox,
     processActor,
-    initParamWidgets,
     removeActor,
     updateParameters,
     clearParamLayout,
@@ -21,7 +20,6 @@ from oot_actor.actor import (
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    global actorRoot
     actorRoot = getRoot("res/actorList.xml")
 
     def __init__(self):
@@ -41,43 +39,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def initConnections(self):
         """Links the widgets to their callback function"""
-        self.searchBox.textChanged.connect(self.searchBoxOnUpdate)
-        self.actorCategoryList.currentTextChanged.connect(self.searchBoxOnUpdate)
-        self.actorFoundBox.currentTextChanged.connect(self.foundBoxOnUpdate)
-        self.actorTypeList.currentTextChanged.connect(self.typeBoxOnUpdate)
-        self.ignoreTiedBox.stateChanged.connect(self.typeBoxOnUpdate)
-        self.openActorFileBtn.clicked.connect(self.openActorFile)
-        self.saveActorFileBtn.clicked.connect(self.saveActorFile)
-        # self.addActorBtn.clicked.connect()
-        self.deleteActorBtn.clicked.connect(self.deleteActor)
-        self.evalParamBox.stateChanged.connect(self.evalOnUpdate)
-        self.paramLabel.clicked.connect(self.copyParam)
-        self.rotXLabel.clicked.connect(self.copyRotX)
-        self.rotYLabel.clicked.connect(self.copyRotY)
-        self.rotZLabel.clicked.connect(self.copyRotZ)
-        self.deleteAllBtn.clicked.connect(self.deleteAll)
+        initActorConnections(self)
 
     def initComponents(self):
         """Initialise the UI widgets"""
-        self.actorCategoryList.clear()
-        self.actorCategoryList.addItems(getCategories(actorRoot))
-        self.searchBoxOnUpdate()
-        self.paramLayout.setHorizontalSpacing(50)
-        self.ignoreTiedBox.setHidden(True)
-        initParamWidgets(self, actorRoot)
+        initActorComponents(self)
 
     # connections callbacks
 
     def searchBoxOnUpdate(self):
         """Called everytime the search box is updated"""
-        searchResults = getActors(actorRoot, self.searchBox.text(), self.actorCategoryList.currentText())
+        searchResults = getActors(self.actorRoot, self.searchBox.text(), self.actorCategoryList.currentText())
         self.actorFoundBox.clear()
         self.actorFoundBox.addItems(searchResults)
         self.actorFoundLabel.setText(f"Found: {len(searchResults)}")
 
     def foundBoxOnUpdate(self):
         """Called everytime a new actor is chosen"""
-        initActorTypeBox(self, actorRoot)
+        initActorTypeBox(self)
         self.paramBox.setText("0x0")
         self.rotXBox.setText("0x0")
         self.rotYBox.setText("0x0")
@@ -86,7 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def typeBoxOnUpdate(self):
         """Called everytime the actor type is changed"""
         clearParamLayout(self)
-        processActor(self, actorRoot)
+        processActor(self, self.actorRoot)
         self.paramOnUpdate()
 
         enabled = False if self.ignoreTiedBox.isChecked() else True
@@ -102,11 +81,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
-        global actorRoot
         defaultDir = str(Path.home())
         path = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")[0]
         if len(path):
-            actorRoot = ET.parse(path).getroot()
+            self.actorRoot = ET.parse(path).getroot()
             resetActorUI(self)
             self.initComponents()
 
@@ -115,13 +93,13 @@ class MainWindow(QtWidgets.QMainWindow):
         defaultDir = str(Path.home())
         path = QFileDialog.getSaveFileName(None, "Save File", defaultDir, "*.xml")[0]
         if len(path):
-            writeActorFile(actorRoot, path)
+            writeActorFile(self.actorRoot, path)
             self.setWindowTitle(f"{self.title}")
 
     def deleteActor(self):
         """Called everytime the 'delete actor' button is clicked"""
         index = self.actorFoundBox.currentRow()
-        removeActor(self.actorFoundBox.currentItem(), actorRoot)
+        removeActor(self.actorFoundBox.currentItem(), self.actorRoot)
         resetActorUI(self)
         self.initComponents()
         self.actorFoundBox.setCurrentRow(index)
@@ -129,7 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def paramOnUpdate(self):
         """Called everytime a parameter widget is updated"""
-        updateParameters(self, actorRoot)
+        updateParameters(self, self.actorRoot)
         if self.evalParamBox.isChecked():
             self.evalOnUpdate()
 
@@ -146,7 +124,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if self.rotZBox is not None:
                     self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
             else:
-                updateParameters(self, actorRoot)
+                updateParameters(self, self.actorRoot)
 
     def copyParam(self):
         """Called when the user clicks on a parameter 'label'"""
@@ -166,9 +144,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def deleteAll(self):
         """Called when the user wants to delete every actors"""
-        actor = actorRoot[0]
+        actor = self.actorRoot[0]
         if actor.tag == "Actor":
-            actorRoot.remove(actor)
+            self.actorRoot.remove(actor)
             self.deleteAll()
             return
         resetActorUI(self)

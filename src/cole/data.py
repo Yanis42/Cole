@@ -3,8 +3,6 @@ from operator import add, sub, mul, truediv, mod, lshift, rshift, rshift, or_, a
 
 uiFile = "res/MainWindow.ui"
 
-actorRoot = None
-
 # format of both lists: ({identifier}, {label widget}, {parameter widget})
 paramWidgets = []  # contains every parameter widget
 shownWidgets = []  # contains every parameter widget that are currently displayed

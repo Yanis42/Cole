@@ -15,51 +15,6 @@ from .actor_getters import (
 )
 
 
-def initActorTypeBox(self, actorRoot):
-    """Adds items to the type combo box"""
-    selectedItem = self.actorFoundBox.currentItem()
-    if selectedItem is not None:
-        self.actorTypeList.clear()
-        actorTypes = getActorItemList(actorRoot, getActorIDFromName(actorRoot, selectedItem.text()), "Type")
-        if actorTypes is not None and (len(actorTypes) > 0):
-            self.actorTypeList.addItems(actorTypes)
-            self.actorTypeList.setEnabled(True)
-        else:
-            self.actorTypeList.setEnabled(False)
-
-
-def initParamWidgets(self, actorRoot: ET.Element):
-    """Creates necessary widgets for every parameter"""
-    for actor in actorRoot:
-        for elem in actor:
-            items = None
-            if elem.tag in subElemTags:
-                widgetType = tagToWidget[elem.tag]
-                objName = f"{actor.get('Key')}_{widgetType}{elem.get('Index')}"
-                labelName = f"{objName}Label"
-                labelText = elem.get("Name")
-
-                if elem.tag == "Flag":
-                    labelText = f"{elem.get('Type')} Flag"
-                elif elem.tag in ["ChestContent", "Collectible", "Message"]:
-                    if elem.tag == "ChestContent":
-                        labelText = "Chest Content"
-                    elif elem.tag == "Collectible":
-                        labelText = "Collectibles"
-                    elif elem.tag == "Message":
-                        labelText = "Elf_Msg Message ID"
-                    items = getListItems(actorRoot, labelText)
-
-                if widgetType == "ComboBox":
-                    if elem.tag == "Enum" and items is None:
-                        items = [item.get("Name") for item in elem]
-                    addComboBox(self, objName, labelName, labelText, items)
-                elif widgetType == "LineEdit":
-                    addLineEdit(self, objName, labelName, labelText)
-                elif widgetType == "CheckBox":
-                    addCheckBox(self, objName, labelText)
-
-
 def processActor(self, actorRoot: ET.Element):
     """Adds needed widgets to the UI's form"""
     global shownWidgets
@@ -191,7 +146,7 @@ def writeActorFile(actorRoot: ET.Element, path: str):
         print("ERROR: The file can't be written. Update the permissions, this folder is probably read-only.")
 
 
-def deleteWidgets(self):
+def deleteWidgets():
     """Deletes every widget from the list"""
     global paramWidgets
     for elem in paramWidgets:
@@ -213,4 +168,4 @@ def resetActorUI(self):
     self.actorFoundLabel.setText("Found: 0")
     self.ignoreTiedBox.setHidden(True)
     self.ignoreTiedBox.setChecked(False)
-    deleteWidgets(self)
+    deleteWidgets()
