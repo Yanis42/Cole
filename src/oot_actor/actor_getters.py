@@ -134,7 +134,9 @@ def getFormattedParams(mask: int, value: str, isBool: bool):
     """Returns the parameter with the correct format"""
     shift = getShiftFromMask(mask) if mask is not None else 0
 
-    if not isBool:
+    if not int(getEvalParams(value), base=16):
+        return
+    elif not isBool:
         if shift > 0:
             return f"(({value} << {shift}) & 0x{mask:04X})"
         else:
@@ -181,16 +183,7 @@ def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: 
                     else:
                         value = getFormattedParams(mask, value, True)
 
-                    if not value in params:
+                    if value is not None and not value in params:
                         params.append(value)
     # remove unnecessary elements
-    return getFilteredParams(params)
-
-
-def getFilteredParams(params: list):
-    """Returns the list of parameters without useless elements"""
-    # removes every "0" parameter
-    for param in params:
-        if int(getEvalParams(param), base=16) == 0:
-            params.remove(param)
     return params
