@@ -107,11 +107,16 @@ def updateParameters(self, actorRoot: ET.Element):
                     paramValue = " | ".join(params) if len(params) > 0 else "0x0"
 
                     if target == "Params":
-                        paramValue = (
-                            f"(0x{typeParam} | ({paramValue}))"
-                            if int(getEvalParams(f"0x{typeParam}"), base=16) > 0
-                            else f"({paramValue})"
-                        )
+                        evalType = int(getEvalParams(f"0x{typeParam}"), base=16)
+                        evalParamValue = int(getEvalParams(paramValue), base=16)
+                        if evalType and evalParamValue:
+                            paramValue = f"(0x{typeParam} | ({paramValue}))"
+                        elif evalType and not evalParamValue:
+                            paramValue = f"0x{typeParam}"
+                        elif not evalType and evalParamValue:
+                            paramValue = f"({paramValue})"
+                        else:
+                            paramValue = "0x0"
                         self.paramBox.setText(paramValue)
                     elif target == "XRot":
                         self.rotXBox.setText(paramValue)

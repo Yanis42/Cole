@@ -185,5 +185,4 @@ def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: 
 
                     if value is not None and not value in params:
                         params.append(value)
-    # remove unnecessary elements
     return params
