@@ -136,13 +136,16 @@
         </rect>
        </property>
        <property name="readOnly">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="clearButtonEnabled">
         <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="rotXBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -152,10 +155,13 @@
         </rect>
        </property>
        <property name="readOnly">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="rotYBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -165,10 +171,13 @@
         </rect>
        </property>
        <property name="readOnly">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QLineEdit" name="rotZBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -178,7 +187,7 @@
         </rect>
        </property>
        <property name="readOnly">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QCheckBox" name="evalParamBox">
