@@ -1,6 +1,6 @@
 from xml.etree import ElementTree as ET
 from ast import parse, Expression, Num, UnaryOp, USub, Invert, BinOp
-from cole.data import actorCatDebugToNormal, binOps, tagToWidget
+from cole.data import OoTActorProperty, actorCatDebugToNormal, binOps
 from cole.getters import getShiftFromMask
 
 
@@ -49,47 +49,45 @@ def getActorIDFromName(actorRoot: ET.Element, actorName: str):
     return
 
 
-def getActorItemList(actorRoot: ET.Element, actorID: str, listName: str):
-    """Returns an actor's type list or enum node content"""
-    return [
-        item.text
-        for actor in actorRoot
-        if actorID == actor.get("ID")
-        for elem in actor
-        if elem.tag == listName
-        for item in elem
-    ]
-
-
-def getActorEnumParamValue(actor: ET.Element, selectedType: str, actorID: str, elemTag: str):
-    """Returns an actor's type list or enum param value"""
+def getActorTypeValue(actor: ET.Element, selectedType: str, actorID: str):
+    """Returns an actor's type list value"""
     if actor.get("ID") == actorID:
         for elem in actor:
-            if elem.tag == elemTag:
-                for item in elem:
-                    identifier = item.text if (elemTag == "Type") else item.get("Name")
-                    if selectedType == identifier:
-                        if elemTag == "Type":
-                            return item.get("Params")
-                        else:
-                            return item.get("Value")
+            if elem.tag == "Type":
+                objName = actor.get("Key") + f".type{elem.get('Index', '1')}"
+                return getEnumValueFromObjName(objName, selectedType)
     return
 
 
-def getListItems(actorRoot: ET.Element, listName: str):
-    """Returns a <List> node item list"""
-    return [
-        elem.get("Name") for list in actorRoot if list.tag == "List" and (list.get("Name") == listName) for elem in list
-    ]
+def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedType: str, actorID: str, elemTag: str):
+    """Returns an actor's enum param value"""
+    if actor.get("ID") == actorID:
+        objName = None
+        actorKey = actor.get("Key")
+        index = elem.get("Index", "1")
+
+        if elem.tag == elemTag == "Enum":
+            objName = actorKey + f".enum{index}.list"
+        elif elem.tag == elemTag == "ChestContent":
+            objName = actorKey + f".itemChest{index}.list"
+        elif elem.tag == elemTag == "Message":
+            objName = actorKey + f".msgID{index}.list"
+        elif elem.tag == elemTag == "Collectible":
+            objName = actorKey + f".collectibleDrop{index}.list"
+
+        if objName is not None:
+            return getEnumValueFromObjName(objName, selectedType)
+    return
 
 
-def getListValue(actorRoot: ET.Element, listName: str, widget):
-    """Returns the value from a <List> node"""
-    for list in actorRoot:
-        if list.tag == "List" and list.get("Name") == listName:
-            for item in list:
-                if widget.currentText() == item.get("Name"):
-                    return item.get("Value")
+def getEnumValueFromObjName(objName: str, selectedType: str):
+    """Returns the value using the object name"""
+    # see ``initOoTActorProperties`` for list format
+    enumList = OoTActorProperty.__annotations__[objName]
+    if enumList is not None:
+        for elem in enumList:
+            if selectedType == elem[1]:
+                return elem[2]
     return
 
 
@@ -145,44 +143,80 @@ def getFormattedParams(mask: int, value: str, isBool: bool):
         return f"({value} << {shift})"
 
 
-def getParamValue(actor: ET.Element, target: str, listValue: str, shownWidgets: list):
+def getParamValue(self, actor: ET.Element, target: str):
     """Returns a list of the parameters for a specific target for widgets which are displayed"""
     # this function should be called when we know for sure it's the right actor
     params = []
-    name = None
+    actorID = actor.get("ID")
+    typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
 
     # iterates through the sub-elements of the actor
     for elem in actor:
-        # we don't want <Type> and <Notes>
-        if not (elem.tag == "Type") and not (elem.tag == "Notes"):
-            # iterate through the displayed widgets
-            for (objName, label, widget, curTarget) in shownWidgets:
-                name = f"{actor.get('Key')}_{tagToWidget[elem.tag]}{elem.get('Index')}"
-                enumParam = (
-                    getActorEnumParamValue(actor, widget.currentText(), actor.get("ID"), "Enum")
-                    if (objName == name) and "ComboBox" in objName
-                    else "0x0"
-                )
+        objName = getObjName(actor, elem)
+        tiedTypeList = elem.get("TiedActorTypes")
+        # we don't want <Type> and <Notes>, also look for tied params
+        if (
+            objName is not None
+            and not (elem.tag == "Type")
+            and not (elem.tag == "Notes")
+            and tiedTypeList is None
+            or tiedTypeList is not None
+            and typeParam is not None
+            and typeParam in tiedTypeList.split(",")
+        ):
+            widget = OoTActorProperty.__annotations__[objName]
 
-                # get the value for each widget on screen
-                if (objName == name) and (elem.get("Target", "Params") == curTarget == target):
-                    # get the param value of this widget then add it to the list
-                    value = None
-                    mask = int(elem.get("Mask", "0x0"), base=16)
-                    if elem.tag == "ChestContent" or elem.tag == "Collectible" or elem.tag == "Message":
-                        value = listValue
-                    elif elem.tag == "Enum":
-                        value = enumParam if enumParam is not None else "0x0"
-                    elif (elem.tag == "Property") or (elem.tag == "Flag"):
-                        value = widget.text()
-                    elif elem.tag == "Bool":
-                        value = "1" if widget.isChecked() else "0"
+            # get the value for each widget on screen
+            if elem.get("Target", "Params") == target:
+                # get the param value of this widget then add it to the list
+                value = None
+                mask = int(elem.get("Mask", "0x0"), base=16)
+                if (
+                    elem.tag == "Enum"
+                    or elem.tag == "ChestContent"
+                    or elem.tag == "Collectible"
+                    or elem.tag == "Message"
+                ):
+                    enumParam = getActorEnumValue(actor, elem, widget.currentText(), actor.get("ID"), elem.tag)
+                    value = enumParam if enumParam is not None else "0x0"
+                elif (elem.tag == "Property") or (elem.tag == "Flag"):
+                    value = widget.text()
+                elif elem.tag == "Bool":
+                    value = "1" if widget.isChecked() else "0"
 
-                    if not (value == "0" or value == "1"):
-                        value = getFormattedParams(mask, value, False)
-                    else:
-                        value = getFormattedParams(mask, value, True)
+                if not (value == "0" or value == "1"):
+                    value = getFormattedParams(mask, value, False)
+                else:
+                    value = getFormattedParams(mask, value, True)
 
-                    if value is not None and not value in params:
-                        params.append(value)
+                if value is not None and not value in params:
+                    params.append(value)
     return params
+
+
+def getObjName(actor: ET.Element, elem: ET.Element):
+    """Returns the object name from the current actor's informations"""
+    actorKey = actor.get("Key")
+    index = int(elem.get("Index", "1"), base=10)
+
+    if elem.tag == "Property":
+        return actorKey + f".props{index}"
+    elif elem.tag == "Flag":
+        flagType = elem.get("Type")
+        if flagType == "Chest":
+            return actorKey + f".chestFlag{index}"
+        elif flagType == "Collectible":
+            return actorKey + f".collectibleFlag{index}"
+        elif flagType == "Switch":
+            return actorKey + f".switchFlag{index}"
+    elif elem.tag == "Collectible":
+        return actorKey + f".collectibleDrop{index}"
+    elif elem.tag == "ChestContent":
+        return actorKey + f".itemChest{index}"
+    elif elem.tag == "Message":
+        return actorKey + f".msgID{index}"
+    elif elem.tag == "Bool":
+        return actorKey + f".bool{index}"
+    elif elem.tag == "Enum":
+        return actorKey + f".enum{index}"
+    return

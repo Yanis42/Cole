@@ -1,40 +1,36 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom as MD
-from PyQt6.QtWidgets import QFormLayout, QComboBox, QLabel
-from cole.data import subElemTags, tagToWidget, shownWidgets, paramWidgets
-from cole.getters import getWidgetFromName
-from .actor_widgets import addLabel, addComboBox, addLineEdit, addCheckBox
+from PyQt6.QtWidgets import QFormLayout, QCheckBox
+from cole.data import OoTActorProperty, subElemTags
+from .actor_init import initOoTActorProperties
+from .actor_widgets import addLabel
 from .actor_getters import (
-    getActorItemList,
     getActorIDFromName,
     getEvalParams,
-    getListItems,
-    getActorEnumParamValue,
+    getActorTypeValue,
     getParamValue,
-    getListValue,
+    getObjName,
 )
 
 
 def processActor(self, actorRoot: ET.Element):
     """Adds needed widgets to the UI's form"""
-    global shownWidgets
-    shownWidgets = []
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
+        label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
-            typeParam = getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
+            typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
-                    label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
                     label.setHidden(False)
                     self.paramLayout.addRow(label, None)
                     break
+                label.deleteLater()
                 for elem in actor:
                     if elem.tag in subElemTags:
-                        widgetType = tagToWidget[elem.tag]
-                        objName = f"{actor.get('Key')}_{widgetType}{elem.get('Index')}"
                         tiedTypeList = elem.get("TiedActorTypes")
+                        objName = getObjName(actor, elem)
 
                         if tiedTypeList is None:
                             self.ignoreTiedBox.setHidden(True)
@@ -42,16 +38,19 @@ def processActor(self, actorRoot: ET.Element):
                             self.ignoreTiedBox.setHidden(False)
 
                         if (
-                            tiedTypeList is None
-                            or typeParam in tiedTypeList.split(",")
+                            objName is not None
+                            and tiedTypeList is None
+                            or tiedTypeList is not None
+                            and typeParam is not None
+                            and typeParam in tiedTypeList.split(",")
                             or self.ignoreTiedBox.isChecked()
                         ):
-                            label, widget = getWidgetFromName(objName)
+                            label = OoTActorProperty.__annotations__[f"{objName}.label"]
+                            widget = OoTActorProperty.__annotations__[objName]
+
                             if widget is not None:
                                 widget.setHidden(False)
-                                shownWidgets.append((objName, label, widget, elem.get("Target", "Params")))
-
-                                if label is None:
+                                if isinstance(widget, QCheckBox):
                                     self.paramLayout.addRow(widget, None)
                                 else:
                                     label.setHidden(False)
@@ -70,40 +69,23 @@ def removeActor(currentItem, actorRoot: ET.Element):
 
 def updateParameters(self, actorRoot: ET.Element):
     """Updates the parameters from the 4 line edits"""
-    global shownWidgets
-    listName = listValue = None
     targetList = ["Params", "XRot", "YRot", "ZRot"]
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
 
-        # get the value of the chest content, collectible or message id combo box
-        # bug if multiple lists in one actor?
-        for (objName, label, widget, curTarget) in shownWidgets:
-            if label is not None and isinstance(widget, QComboBox):
-                if isinstance(label, QLabel):
-                    label = label.text()
-                if "Chest Content" in label:
-                    listName = label
-                elif "Collectible" in label:
-                    listName = "Collectibles"
-                elif "Message" in label:
-                    listName = "Elf_Msg Message ID"
-                listValue = getListValue(actorRoot, listName, widget) if listName is not None else "0x0"
-
-        listValue = listValue if not listValue is None else "0x0"
         for actor in actorRoot:
             # for each displayed widgets, get the param value, format it, remove useless elements
             # then generate a string out of the list and set that to the correct line edit widget
             typeParam = (
-                getActorEnumParamValue(actor, self.actorTypeList.currentText(), actorID, "Type")
+                getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
                 if self.actorTypeList.isEnabled()
                 else "0000"
             )
 
             if actor.get("ID") == actorID:
                 for target in targetList:
-                    params = getParamValue(actor, target, listValue, shownWidgets)
+                    params = getParamValue(self, actor, target)
                     paramValue = " | ".join(params) if len(params) > 0 else "0x0"
 
                     if target == "Params":
@@ -151,16 +133,6 @@ def writeActorFile(actorRoot: ET.Element, path: str):
         print("ERROR: The file can't be written. Update the permissions, this folder is probably read-only.")
 
 
-def deleteWidgets():
-    """Deletes every widget from the list"""
-    global paramWidgets
-    for elem in paramWidgets:
-        for widget in elem:
-            if widget is not None and not isinstance(widget, str):
-                widget.deleteLater()
-    paramWidgets.clear()
-
-
 def resetActorUI(self):
     """Back to init state"""
     self.actorFoundBox.clear()
@@ -173,4 +145,5 @@ def resetActorUI(self):
     self.actorFoundLabel.setText("Found: 0")
     self.ignoreTiedBox.setHidden(True)
     self.ignoreTiedBox.setChecked(False)
-    deleteWidgets()
+    OoTActorProperty.__annotations__.clear()
+    initOoTActorProperties(self)

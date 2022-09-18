@@ -1,11 +1,14 @@
 from ast import Add, Sub, Mult, Div, Mod, LShift, RShift, RShift, BitOr, BitAnd, BitXor
 from operator import add, sub, mul, truediv, mod, lshift, rshift, rshift, or_, and_, xor
 
-uiFile = "res/MainWindow.ui"
 
-# format of both lists: ({identifier}, {label widget}, {parameter widget})
-paramWidgets = []  # contains every parameter widget
-shownWidgets = []  # contains every parameter widget that are currently displayed
+class OoTActorProperty(object):
+    """Contains param widgets"""
+
+    pass
+
+
+uiFile = "res/MainWindow.ui"
 
 actorCatDebugToNormal = {
     "ACTORCAT_SWITCH": "Switch",
@@ -31,16 +34,6 @@ subElemTags = [
     "Collectible",
     "Message",
 ]
-
-tagToWidget = {
-    "Enum": "ComboBox",
-    "Property": "LineEdit",
-    "Flag": "LineEdit",
-    "Bool": "CheckBox",
-    "ChestContent": "ComboBox",
-    "Collectible": "ComboBox",
-    "Message": "ComboBox",
-}
 
 # binary operators for the eval function
 binOps = {

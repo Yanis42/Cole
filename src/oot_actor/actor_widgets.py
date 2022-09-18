@@ -1,5 +1,41 @@
 from PyQt6.QtWidgets import QLabel, QComboBox, QLineEdit, QCheckBox
-from cole.data import paramWidgets
+from PyQt6.QtCore import Qt
+
+
+def stringProperty(self, objName: str = "strProp", name: str = "", default: str = "", hidden: bool = True):
+    """Creates and returns a new LineEdit widget"""
+    strProp = QLabel(self.paramGroup)
+    strProp = QLineEdit(self.paramGroup)
+    strProp.setObjectName(objName)
+    strProp.setHidden(hidden)
+    strProp.setText(default)
+    strProp.editingFinished.connect(self.paramOnUpdate)
+    label = addLabel(self, f"{objName}.label", name)
+    return strProp, label
+
+
+def enumProperty(self, objName: str = "enumProp", name: str = "", items: list = [], hidden: bool = True):
+    """Creates and returns a new ComboBox widget"""
+    itemList = [elem[1] for elem in items]
+    enumProp = QComboBox(self.paramGroup)
+    enumProp.setObjectName(objName)
+    enumProp.addItems(itemList)
+    enumProp.setHidden(hidden)
+    enumProp.setCurrentIndex(0)
+    enumProp.currentTextChanged.connect(self.paramOnUpdate)
+    label = addLabel(self, f"{objName}.label", name)
+    return enumProp, label
+
+
+def boolProperty(self, objName: str = "boolProp", name: str = "", default: bool = False, hidden: bool = True):
+    """Creates and returns a new CheckBox widget"""
+    boolProp = QCheckBox(self.paramGroup)
+    boolProp.setObjectName(objName)
+    boolProp.setText(name)
+    boolProp.setHidden(hidden)
+    boolProp.setCheckState(Qt.CheckState.Checked if default else Qt.CheckState.Unchecked)
+    boolProp.stateChanged.connect(self.paramOnUpdate)
+    return boolProp
 
 
 def addLabel(self, objName: str, text: str):
@@ -9,50 +45,3 @@ def addLabel(self, objName: str, text: str):
     label.setText(text)
     label.setHidden(True)
     return label
-
-
-def addComboBox(self, objName: str, labelName: str, text: str, items: list):
-    """Creates a combo box widget and add it to the UI with the corresponding label name"""
-    comboBox = QComboBox(self.paramGroup)
-    comboBox.setObjectName(objName)
-    comboBox.addItems(items)
-    label = addLabel(self, labelName, text)
-    addWidgetToList(objName, label, comboBox)
-    comboBox.setHidden(True)
-    comboBox.setCurrentIndex(0)
-    comboBox.currentTextChanged.connect(self.paramOnUpdate)
-    return comboBox
-
-
-def addLineEdit(self, objName: str, labelName: str, text: str):
-    """Creates a line edit widget and add it to the UI with the corresponding label name"""
-    lineEdit = QLineEdit(self.paramGroup)
-    lineEdit.setObjectName(objName)
-    label = addLabel(self, labelName, text)
-    addWidgetToList(objName, label, lineEdit)
-    lineEdit.setHidden(True)
-    lineEdit.setText("0x0")
-    lineEdit.editingFinished.connect(self.paramOnUpdate)
-    return lineEdit
-
-
-def addCheckBox(self, objName: str, text: str):
-    """Creates a check box widget and add it to the UI with the corresponding label name"""
-    checkBox = QCheckBox(self.paramGroup)
-    checkBox.setObjectName(objName)
-    checkBox.setText(text)
-    addWidgetToList(objName, None, checkBox)
-    checkBox.setHidden(True)
-    checkBox.stateChanged.connect(self.paramOnUpdate)
-    return checkBox
-
-
-def addWidgetToList(objName: str, label: QLabel, widget):
-    global paramWidgets
-    if len(paramWidgets) > 0:
-        for elem in paramWidgets:
-            if not (objName == elem[0]):
-                paramWidgets.append((objName, label, widget))
-                break
-    else:
-        paramWidgets.append((objName, label, widget))

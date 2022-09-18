@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QFileDialog
 from pathlib import Path
-from .data import actorCatDebugToNormal, paramWidgets
+from .data import actorCatDebugToNormal
 
 
 def getRoot(xmlFile: str):
@@ -28,14 +28,6 @@ def getCategories(actorRoot: ET.Element):
                 results.append(category)
 
     return results
-
-
-def getWidgetFromName(objName: str):
-    """Returns the label and the corresponding widget"""
-    global paramWidgets
-    for elem in paramWidgets:
-        if objName in elem[0]:
-            return elem[1], elem[2]
 
 
 def getShiftFromMask(mask):
