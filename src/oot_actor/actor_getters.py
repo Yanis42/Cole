@@ -62,21 +62,23 @@ def getActorTypeValue(actor: ET.Element, selectedType: str, actorID: str):
 def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedType: str, actorID: str, elemTag: str):
     """Returns an actor's enum param value"""
     if actor.get("ID") == actorID:
-        objName = None
         actorKey = actor.get("Key")
         index = elem.get("Index", "1")
-
-        if elem.tag == elemTag == "Enum":
-            objName = actorKey + f".enum{index}.list"
-        elif elem.tag == elemTag == "ChestContent":
-            objName = actorKey + f".itemChest{index}.list"
-        elif elem.tag == elemTag == "Message":
-            objName = actorKey + f".msgID{index}.list"
-        elif elem.tag == elemTag == "Collectible":
-            objName = actorKey + f".collectibleDrop{index}.list"
-
+        objName = getListObjName(elem, elemTag, actorKey, index)
         if objName is not None:
             return getEnumValueFromObjName(objName, selectedType)
+    return
+
+
+def getListObjName(elem: ET.Element, elemTag: str, actorKey: str, index: str):
+    if elem.tag == elemTag == "Enum":
+        return actorKey + f".enum{index}.list"
+    elif elem.tag == elemTag == "ChestContent":
+        return actorKey + f".itemChest{index}.list"
+    elif elem.tag == elemTag == "Message":
+        return actorKey + f".msgID{index}.list"
+    elif elem.tag == elemTag == "Collectible":
+        return actorKey + f".collectibleDrop{index}.list"
     return
 
 

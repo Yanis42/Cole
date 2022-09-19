@@ -44,4 +44,5 @@ def addLabel(self, objName: str, text: str):
     label.setObjectName(objName)
     label.setText(text)
     label.setHidden(True)
+    label.setFixedWidth(140)
     return label

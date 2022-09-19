@@ -49,3 +49,10 @@ binOps = {
     BitAnd: and_,
     BitXor: xor,
 }
+
+objNameToTarget = {
+    "paramBox": "Params",
+    "rotXBox": "XRot",
+    "rotYBox": "YRot",
+    "rotZBox": "ZRot",
+}

@@ -1,7 +1,8 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom as MD
-from PyQt6.QtWidgets import QFormLayout, QCheckBox
-from cole.data import OoTActorProperty, subElemTags
+from PyQt6.QtWidgets import QFormLayout, QCheckBox, QLineEdit, QComboBox
+from PyQt6.QtCore import Qt
+from cole.data import OoTActorProperty, subElemTags, objNameToTarget
 from .actor_init import initOoTActorProperties
 from .actor_widgets import addLabel
 from .actor_getters import (
@@ -10,6 +11,8 @@ from .actor_getters import (
     getActorTypeValue,
     getParamValue,
     getObjName,
+    getShiftFromMask,
+    getListObjName,
 )
 
 
@@ -18,6 +21,7 @@ def processActor(self, actorRoot: ET.Element):
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
+        label.setFixedWidth(200)
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
             typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
@@ -147,3 +151,88 @@ def resetActorUI(self):
     self.ignoreTiedBox.setChecked(False)
     OoTActorProperty.__annotations__.clear()
     initOoTActorProperties(self)
+
+
+def setActorType(self, elem: ET.Element, paramType: str):
+    curText = None
+    if paramType is not None:
+        if elem.tag == "Type":
+            for item in elem:
+                if item.get("Params") == paramType:
+                    curText = item.text
+                    break
+        if curText is not None:
+            self.actorTypeList.setCurrentText(curText)
+
+
+def setActorComboBox(itemList: list, widget, paramPart: str):
+    curText = None
+    for item in itemList:
+        if paramPart == item[2]:
+            curText = item[1]
+            break
+    if curText is not None:
+        widget.setCurrentText(curText)
+
+
+def setActorWidgets(actor: ET.Element, elem: ET.Element, params: int, objName: str):
+    mask = int(elem.get("Mask", "0xFFFF"), base=16)
+    shift = getShiftFromMask(mask)
+    paramPart = f"0x{((params & mask) >> shift):02X}"
+    evaledPart = int(getEvalParams(paramPart), base=16)
+
+    widget = OoTActorProperty.__annotations__[objName]
+    if widget is not None:
+        if isinstance(widget, QLineEdit):
+            widget.setText(paramPart)
+        elif isinstance(widget, QCheckBox):
+            state = Qt.CheckState.Checked if evaledPart else Qt.CheckState.Unchecked
+            widget.setCheckState(state)
+        elif isinstance(widget, QComboBox):
+            itemName = getListObjName(elem, elem.tag, actor.get("Key"), elem.get("Index", "1"))
+            if itemName is not None:
+                itemList = OoTActorProperty.__annotations__[itemName]
+                setActorComboBox(itemList, widget, paramPart)
+
+
+def paramsToWidgets(self):
+    sender = self.sender()
+    paramWidget = sender.text()
+    selectecItem = self.actorFoundBox.currentItem()
+    paramList = paramWidget.split(" | ")
+
+    actorID = None
+    if selectecItem is not None:
+        actorID = getActorIDFromName(self.actorRoot, selectecItem.text())
+
+    paramType = self.paramBox.text().split(" | ")[0]
+    if not "<<" in paramType and not "&" in paramType:
+        paramType = int(getEvalParams(paramType.lstrip('(').rstrip(')')), base=16)
+    else:
+        paramType = None
+
+    for actor in self.actorRoot:
+        if actorID is not None and actor.get("ID") == actorID:
+            typeParam = (
+                getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
+                if self.actorTypeList.isEnabled()
+                else "0000"
+            )
+            for part in paramList:
+                for elem in actor:
+                    objName = getObjName(actor, elem)
+                    tiedTypeList = elem.get("TiedActorTypes")
+                    target = elem.get("Target", "Params")
+                    tiedParams = (
+                        tiedTypeList is None
+                        or tiedTypeList is not None
+                        and typeParam is not None
+                        and typeParam in tiedTypeList.split(",")
+                    )
+
+                    if elem.tag == "Type":
+                        paramType &= int(elem.get("Mask", "0xFFFF"), base=16)
+                        setActorType(self, elem, f"{paramType:04X}")
+                    elif not elem.tag == "Notes" and (objNameToTarget[sender.objectName()] == target) and tiedParams:
+                        setActorWidgets(actor, elem, int(getEvalParams(part), base=16), objName)
+            break

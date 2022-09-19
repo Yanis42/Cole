@@ -16,6 +16,7 @@ from oot_actor.actor import (
     clearParamLayout,
     resetActorUI,
     writeActorFile,
+    paramsToWidgets,
 )
 
 
@@ -152,6 +153,9 @@ class MainWindow(QtWidgets.QMainWindow):
         resetActorUI(self)
         self.initComponents()
         self.setWindowTitle(f"{self.title} (unsaved changes)")
+
+    def setParams(self):
+        paramsToWidgets(self)
 
 
 # start the app
