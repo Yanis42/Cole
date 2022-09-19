@@ -8,7 +8,9 @@ from .actor_getters import (
     getListObjName,
 )
 
+
 def setActorType(self, elem: ET.Element, paramType: str):
+    """Sets the actor type value"""
     curText = None
     if paramType is not None:
         if elem.tag == "Type":
@@ -21,6 +23,7 @@ def setActorType(self, elem: ET.Element, paramType: str):
 
 
 def setActorComboBox(itemList: list, widget, paramPart: str):
+    """Sets a ComboBox value"""
     curText = None
     for item in itemList:
         if paramPart == item[2]:
@@ -31,6 +34,7 @@ def setActorComboBox(itemList: list, widget, paramPart: str):
 
 
 def setActorWidgets(actor: ET.Element, elem: ET.Element, params: int, objName: str):
+    """Sets the widgets' values"""
     mask = int(elem.get("Mask", "0xFFFF"), base=16)
     shift = getShiftFromMask(mask)
     paramPart = f"0x{((params & mask) >> shift):02X}"

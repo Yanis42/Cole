@@ -155,6 +155,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(f"{self.title} (unsaved changes)")
 
     def setParams(self):
+        """Called when the user updates one of the 4 parameter boxes"""
         paramsToWidgets(self)
 
 

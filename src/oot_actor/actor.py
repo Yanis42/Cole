@@ -11,6 +11,7 @@ from .actor_getters import (
     getActorTypeValue,
     getParamValue,
     getObjName,
+    getTiedParams,
 )
 
 
@@ -41,10 +42,7 @@ def processActor(self, actorRoot: ET.Element):
 
                         if (
                             objName is not None
-                            and tiedTypeList is None
-                            or tiedTypeList is not None
-                            and typeParam is not None
-                            and typeParam in tiedTypeList.split(",")
+                            and getTiedParams(tiedTypeList, typeParam)
                             or self.ignoreTiedBox.isChecked()
                         ):
                             label = OoTActorProperty.__annotations__[f"{objName}.label"]
@@ -148,6 +146,7 @@ def resetActorUI(self):
 
 
 def paramsToWidgets(self):
+    """Updates the widgets' values when a new parameter is set in the paramBox"""
     sender = self.sender()
     paramWidget = sender.text()
     selectecItem = self.actorFoundBox.currentItem()
@@ -159,7 +158,7 @@ def paramsToWidgets(self):
 
     paramType = self.paramBox.text().split(" | ")[0]
     if not "<<" in paramType and not "&" in paramType:
-        paramType = int(getEvalParams(paramType.lstrip('(').rstrip(')')), base=16)
+        paramType = int(getEvalParams(paramType.lstrip("(").rstrip(")")), base=16)
     else:
         paramType = None
 
@@ -171,12 +170,7 @@ def paramsToWidgets(self):
                     objName = getObjName(actor, elem)
                     tiedTypeList = elem.get("TiedActorTypes")
                     target = elem.get("Target", "Params")
-                    tiedParams = (
-                        tiedTypeList is None
-                        or tiedTypeList is not None
-                        and typeParam is not None
-                        and typeParam in tiedTypeList.split(",")
-                    )
+                    tiedParams = getTiedParams(tiedTypeList, typeParam)
 
                     if elem.tag == "Type":
                         paramType &= int(elem.get("Mask", "0xFFFF"), base=16)

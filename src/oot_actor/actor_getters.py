@@ -73,6 +73,7 @@ def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedType: str, ac
 
 
 def getListObjName(elem: ET.Element, elemTag: str, actorKey: str, index: str):
+    """Returns the name of the list containing the ComboBox items"""
     if elem.tag == elemTag == "Enum":
         return actorKey + f".enum{index}.list"
     elif elem.tag == elemTag == "ChestContent":
@@ -163,10 +164,7 @@ def getParamValue(self, actor: ET.Element, target: str):
             objName is not None
             and not (elem.tag == "Type")
             and not (elem.tag == "Notes")
-            and tiedTypeList is None
-            or tiedTypeList is not None
-            and typeParam is not None
-            and typeParam in tiedTypeList.split(",")
+            and getTiedParams(tiedTypeList, typeParam)
         ):
             widget = OoTActorProperty.__annotations__[objName]
 
@@ -224,3 +222,9 @@ def getObjName(actor: ET.Element, elem: ET.Element):
     elif elem.tag == "Enum":
         return actorKey + f".enum{index}"
     return
+
+
+def getTiedParams(tiedTypeList: str, typeParam: str):
+    return tiedTypeList is None or (
+        tiedTypeList is not None and typeParam is not None and typeParam in tiedTypeList.split(",")
+    )
