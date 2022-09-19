@@ -49,9 +49,11 @@ def getActorIDFromName(actorRoot: ET.Element, actorName: str):
     return
 
 
-def getActorTypeValue(actor: ET.Element, selectedType: str, actorID: str):
+def getActorTypeValue(self, actor: ET.Element, selectedType: str, actorID: str):
     """Returns an actor's type list value"""
-    if actor.get("ID") == actorID:
+    if not self.actorTypeList.isEnabled():
+        return "0000"
+    elif actor.get("ID") == actorID:
         for elem in actor:
             if elem.tag == "Type":
                 objName = actor.get("Key") + f".type{elem.get('Index', '1')}"
@@ -150,7 +152,7 @@ def getParamValue(self, actor: ET.Element, target: str):
     # this function should be called when we know for sure it's the right actor
     params = []
     actorID = actor.get("ID")
-    typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
+    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
 
     # iterates through the sub-elements of the actor
     for elem in actor:

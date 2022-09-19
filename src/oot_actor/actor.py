@@ -1,18 +1,16 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom as MD
-from PyQt6.QtWidgets import QFormLayout, QCheckBox, QLineEdit, QComboBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QFormLayout, QCheckBox
 from cole.data import OoTActorProperty, subElemTags, objNameToTarget
 from .actor_init import initOoTActorProperties
 from .actor_widgets import addLabel
+from .actor_setters import setActorType, setActorWidgets
 from .actor_getters import (
     getActorIDFromName,
     getEvalParams,
     getActorTypeValue,
     getParamValue,
     getObjName,
-    getShiftFromMask,
-    getListObjName,
 )
 
 
@@ -24,7 +22,7 @@ def processActor(self, actorRoot: ET.Element):
         label.setFixedWidth(200)
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
-            typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
                     label.setHidden(False)
@@ -81,11 +79,7 @@ def updateParameters(self, actorRoot: ET.Element):
         for actor in actorRoot:
             # for each displayed widgets, get the param value, format it, remove useless elements
             # then generate a string out of the list and set that to the correct line edit widget
-            typeParam = (
-                getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
-                if self.actorTypeList.isEnabled()
-                else "0000"
-            )
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
 
             if actor.get("ID") == actorID:
                 for target in targetList:
@@ -153,48 +147,6 @@ def resetActorUI(self):
     initOoTActorProperties(self)
 
 
-def setActorType(self, elem: ET.Element, paramType: str):
-    curText = None
-    if paramType is not None:
-        if elem.tag == "Type":
-            for item in elem:
-                if item.get("Params") == paramType:
-                    curText = item.text
-                    break
-        if curText is not None:
-            self.actorTypeList.setCurrentText(curText)
-
-
-def setActorComboBox(itemList: list, widget, paramPart: str):
-    curText = None
-    for item in itemList:
-        if paramPart == item[2]:
-            curText = item[1]
-            break
-    if curText is not None:
-        widget.setCurrentText(curText)
-
-
-def setActorWidgets(actor: ET.Element, elem: ET.Element, params: int, objName: str):
-    mask = int(elem.get("Mask", "0xFFFF"), base=16)
-    shift = getShiftFromMask(mask)
-    paramPart = f"0x{((params & mask) >> shift):02X}"
-    evaledPart = int(getEvalParams(paramPart), base=16)
-
-    widget = OoTActorProperty.__annotations__[objName]
-    if widget is not None:
-        if isinstance(widget, QLineEdit):
-            widget.setText(paramPart)
-        elif isinstance(widget, QCheckBox):
-            state = Qt.CheckState.Checked if evaledPart else Qt.CheckState.Unchecked
-            widget.setCheckState(state)
-        elif isinstance(widget, QComboBox):
-            itemName = getListObjName(elem, elem.tag, actor.get("Key"), elem.get("Index", "1"))
-            if itemName is not None:
-                itemList = OoTActorProperty.__annotations__[itemName]
-                setActorComboBox(itemList, widget, paramPart)
-
-
 def paramsToWidgets(self):
     sender = self.sender()
     paramWidget = sender.text()
@@ -213,11 +165,7 @@ def paramsToWidgets(self):
 
     for actor in self.actorRoot:
         if actorID is not None and actor.get("ID") == actorID:
-            typeParam = (
-                getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
-                if self.actorTypeList.isEnabled()
-                else "0000"
-            )
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
             for part in paramList:
                 for elem in actor:
                     objName = getObjName(actor, elem)
