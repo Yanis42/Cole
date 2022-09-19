@@ -1,15 +1,17 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom as MD
 from PyQt6.QtWidgets import QFormLayout, QCheckBox
-from cole.data import OoTActorProperty, subElemTags
+from cole.data import OoTActorProperty, subElemTags, objNameToTarget
 from .actor_init import initOoTActorProperties
 from .actor_widgets import addLabel
+from .actor_setters import setActorType, setActorWidgets
 from .actor_getters import (
     getActorIDFromName,
     getEvalParams,
     getActorTypeValue,
     getParamValue,
     getObjName,
+    getTiedParams,
 )
 
 
@@ -18,9 +20,10 @@ def processActor(self, actorRoot: ET.Element):
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
+        label.setFixedWidth(200)
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
-            typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
             if actor.get("Name") == selectedItem.text():
                 if len(actor) == 0:
                     label.setHidden(False)
@@ -39,10 +42,7 @@ def processActor(self, actorRoot: ET.Element):
 
                         if (
                             objName is not None
-                            and tiedTypeList is None
-                            or tiedTypeList is not None
-                            and typeParam is not None
-                            and typeParam in tiedTypeList.split(",")
+                            and getTiedParams(tiedTypeList, typeParam)
                             or self.ignoreTiedBox.isChecked()
                         ):
                             label = OoTActorProperty.__annotations__[f"{objName}.label"]
@@ -77,11 +77,7 @@ def updateParameters(self, actorRoot: ET.Element):
         for actor in actorRoot:
             # for each displayed widgets, get the param value, format it, remove useless elements
             # then generate a string out of the list and set that to the correct line edit widget
-            typeParam = (
-                getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
-                if self.actorTypeList.isEnabled()
-                else "0000"
-            )
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
 
             if actor.get("ID") == actorID:
                 for target in targetList:
@@ -147,3 +143,38 @@ def resetActorUI(self):
     self.ignoreTiedBox.setChecked(False)
     OoTActorProperty.__annotations__.clear()
     initOoTActorProperties(self)
+
+
+def paramsToWidgets(self):
+    """Updates the widgets' values when a new parameter is set in the paramBox"""
+    sender = self.sender()
+    paramWidget = sender.text()
+    selectecItem = self.actorFoundBox.currentItem()
+    paramList = paramWidget.split(" | ")
+
+    actorID = None
+    if selectecItem is not None:
+        actorID = getActorIDFromName(self.actorRoot, selectecItem.text())
+
+    paramType = self.paramBox.text().split(" | ")[0]
+    if not "<<" in paramType and not "&" in paramType:
+        paramType = int(getEvalParams(paramType.lstrip("(").rstrip(")")), base=16)
+    else:
+        paramType = None
+
+    for actor in self.actorRoot:
+        if actorID is not None and actor.get("ID") == actorID:
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
+            for part in paramList:
+                for elem in actor:
+                    objName = getObjName(actor, elem)
+                    tiedTypeList = elem.get("TiedActorTypes")
+                    target = elem.get("Target", "Params")
+                    tiedParams = getTiedParams(tiedTypeList, typeParam)
+
+                    if elem.tag == "Type":
+                        paramType &= int(elem.get("Mask", "0xFFFF"), base=16)
+                        setActorType(self, elem, f"{paramType:04X}")
+                    elif not elem.tag == "Notes" and (objNameToTarget[sender.objectName()] == target) and tiedParams:
+                        setActorWidgets(actor, elem, int(getEvalParams(part), base=16), objName)
+            break

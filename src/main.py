@@ -16,6 +16,7 @@ from oot_actor.actor import (
     clearParamLayout,
     resetActorUI,
     writeActorFile,
+    paramsToWidgets,
 )
 
 
@@ -152,6 +153,10 @@ class MainWindow(QtWidgets.QMainWindow):
         resetActorUI(self)
         self.initComponents()
         self.setWindowTitle(f"{self.title} (unsaved changes)")
+
+    def setParams(self):
+        """Called when the user updates one of the 4 parameter boxes"""
+        paramsToWidgets(self)
 
 
 # start the app

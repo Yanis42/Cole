@@ -9,14 +9,15 @@ Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
 - Edit actor parameters to get the hex value
 - Safe ``eval()`` function to avoid any security issues, from [Fast64](https://github.com/fast-64/fast64)
 - Copy the parameters in the clipboard by clicking on the label next the parameter/rotation textbox of your choice
+- Reverse the param process, from hex to values on the UI (need extra testing)
 
 ## Planned Features
-- Reverse the param process, from hex to values on the UI
 - Add an actor in the list
 - A list on the UI containing the current flags of the scene and warn if one is already used (Ticamus)
 
 ## TODO
 - Avoid reloading the UI when an actor is deleted
+- Disable useless parameters LineEdits
 
 ## How it works
 When the program initialises, it creates all the necessary widgets and then hides them (otherwise you can see them on the UI). Then, when we need to show the widgets, it hides the ones that are currently displayed, removes the row and shows the new widgets on a new row.

@@ -21,6 +21,10 @@ def initActorConnections(self):
     self.rotYLabel.clicked.connect(self.copyRotY)
     self.rotZLabel.clicked.connect(self.copyRotZ)
     self.deleteAllBtn.clicked.connect(self.deleteAll)
+    self.paramBox.editingFinished.connect(self.setParams)
+    self.rotXBox.editingFinished.connect(self.setParams)
+    self.rotYBox.editingFinished.connect(self.setParams)
+    self.rotZBox.editingFinished.connect(self.setParams)
 
 
 def initActorComponents(self):
@@ -145,9 +149,7 @@ def initActorTypeBox(self):
                         objName = actor.get("Key") + f".type{elem.get('Index', '1')}"
                         typeList = OoTActorProperty.__annotations__[objName]
                         items = [type[1] for type in typeList]
-
                         if items is not None and (len(items) > 0):
                             self.actorTypeList.addItems(items)
                             self.actorTypeList.setEnabled(True)
-
                         return

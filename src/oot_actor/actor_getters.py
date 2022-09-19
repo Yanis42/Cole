@@ -49,9 +49,11 @@ def getActorIDFromName(actorRoot: ET.Element, actorName: str):
     return
 
 
-def getActorTypeValue(actor: ET.Element, selectedType: str, actorID: str):
+def getActorTypeValue(self, actor: ET.Element, selectedType: str, actorID: str):
     """Returns an actor's type list value"""
-    if actor.get("ID") == actorID:
+    if not self.actorTypeList.isEnabled():
+        return "0000"
+    elif actor.get("ID") == actorID:
         for elem in actor:
             if elem.tag == "Type":
                 objName = actor.get("Key") + f".type{elem.get('Index', '1')}"
@@ -62,21 +64,24 @@ def getActorTypeValue(actor: ET.Element, selectedType: str, actorID: str):
 def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedType: str, actorID: str, elemTag: str):
     """Returns an actor's enum param value"""
     if actor.get("ID") == actorID:
-        objName = None
         actorKey = actor.get("Key")
         index = elem.get("Index", "1")
-
-        if elem.tag == elemTag == "Enum":
-            objName = actorKey + f".enum{index}.list"
-        elif elem.tag == elemTag == "ChestContent":
-            objName = actorKey + f".itemChest{index}.list"
-        elif elem.tag == elemTag == "Message":
-            objName = actorKey + f".msgID{index}.list"
-        elif elem.tag == elemTag == "Collectible":
-            objName = actorKey + f".collectibleDrop{index}.list"
-
+        objName = getListObjName(elem, elemTag, actorKey, index)
         if objName is not None:
             return getEnumValueFromObjName(objName, selectedType)
+    return
+
+
+def getListObjName(elem: ET.Element, elemTag: str, actorKey: str, index: str):
+    """Returns the name of the list containing the ComboBox items"""
+    if elem.tag == elemTag == "Enum":
+        return actorKey + f".enum{index}.list"
+    elif elem.tag == elemTag == "ChestContent":
+        return actorKey + f".itemChest{index}.list"
+    elif elem.tag == elemTag == "Message":
+        return actorKey + f".msgID{index}.list"
+    elif elem.tag == elemTag == "Collectible":
+        return actorKey + f".collectibleDrop{index}.list"
     return
 
 
@@ -148,7 +153,7 @@ def getParamValue(self, actor: ET.Element, target: str):
     # this function should be called when we know for sure it's the right actor
     params = []
     actorID = actor.get("ID")
-    typeParam = getActorTypeValue(actor, self.actorTypeList.currentText(), actorID)
+    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
 
     # iterates through the sub-elements of the actor
     for elem in actor:
@@ -159,10 +164,7 @@ def getParamValue(self, actor: ET.Element, target: str):
             objName is not None
             and not (elem.tag == "Type")
             and not (elem.tag == "Notes")
-            and tiedTypeList is None
-            or tiedTypeList is not None
-            and typeParam is not None
-            and typeParam in tiedTypeList.split(",")
+            and getTiedParams(tiedTypeList, typeParam)
         ):
             widget = OoTActorProperty.__annotations__[objName]
 
@@ -220,3 +222,9 @@ def getObjName(actor: ET.Element, elem: ET.Element):
     elif elem.tag == "Enum":
         return actorKey + f".enum{index}"
     return
+
+
+def getTiedParams(tiedTypeList: str, typeParam: str):
+    return tiedTypeList is None or (
+        tiedTypeList is not None and typeParam is not None and typeParam in tiedTypeList.split(",")
+    )
