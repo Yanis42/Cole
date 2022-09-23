@@ -105,6 +105,9 @@ def getEvalParams(params: str):
     if params is None or "None" in params:
         return "0x0"
 
+    if not "0x" in params:
+        params = f"0x{params}"
+
     # remove spaces
     params = params.strip()
 
@@ -228,3 +231,21 @@ def getTiedParams(tiedTypeList: str, typeParam: str):
     return tiedTypeList is None or (
         tiedTypeList is not None and typeParam is not None and typeParam in tiedTypeList.split(",")
     )
+
+
+def getFinalParams(self, actor: ET.Element, target: str, params: str):
+    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actor.get("ID"))
+    params = getParamValue(self, actor, target) if params is None else params
+    paramValue = " | ".join(params) if len(params) > 0 else "0x0"
+    if target == "Params":
+        evalType = int(getEvalParams(f"0x{typeParam}"), base=16)
+        evalParamValue = int(getEvalParams(paramValue), base=16)
+        if evalType and evalParamValue:
+            paramValue = f"(0x{typeParam} | ({paramValue}))"
+        elif evalType and not evalParamValue:
+            paramValue = f"0x{typeParam}"
+        elif not evalType and evalParamValue:
+            paramValue = f"({paramValue})"
+        else:
+            paramValue = "0x0"
+    return paramValue

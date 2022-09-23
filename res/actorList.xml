@@ -1175,9 +1175,15 @@ ZROT 0x00FF = Gold Skulltula spawn var high byte (See Gold Skulltula Actor 0095)
       <Item Params="0200"> Appears on explosion or Megaton Hammer</Item>
     </Type>
     <Bool Index="1" Mask="0xF000" Name="Is Small Fairy Fountain" Target="Params"/>
-    <ChestContent Mask="0x00E0" Target="Params"/>
     <Flag Index="1" Mask="0x001F" Target="Params" Type="Chest"/>
-    <Enum Index="1" Mask="0x000F" Name="Destination" Target="ZRot" TiedActorTypes="0000,0100,0200">
+    <Enum Index="1" Mask="0x00E0" Name="Chest Content" Target="Params">
+      <Item Name="Blue Rupee" Value="0x00"/>
+      <Item Name="Red Rupee" Value="0x01"/>
+      <Item Name="Gold Rupee" Value="0x02"/>
+      <Item Name="Bombs (20)" Value="0x03"/>
+      <Item Name="Bombs (1)" Value="0x04"/>
+    </Enum>
+    <Enum Index="2" Mask="0x000F" Name="Destination" Target="ZRot">
       <Item Name="Generic Grotto" Value="0x00"/>
       <Item Name="Big Skulltula" Value="0x01"/>
       <Item Name="Heart Piece Scrub" Value="0x02"/>

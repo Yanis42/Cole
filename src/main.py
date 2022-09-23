@@ -108,24 +108,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def paramOnUpdate(self):
         """Called everytime a parameter widget is updated"""
-        updateParameters(self, self.actorRoot)
-        if self.evalParamBox.isChecked():
+        if self.actorFoundBox.currentRow() >= 0:
             self.evalOnUpdate()
 
     def evalOnUpdate(self):
         """Called everytime the eval checkbox is updated"""
-        if self.actorFoundBox.currentRow() >= 0:
-            if self.evalParamBox.isChecked():
-                if self.paramBox is not None:
-                    self.paramBox.setText(getEvalParams(self.paramBox.text()))
-                if self.rotXBox is not None:
-                    self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
-                if self.rotYBox is not None:
-                    self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
-                if self.rotZBox is not None:
-                    self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
-            else:
-                updateParameters(self, self.actorRoot)
+        updateParameters(self, self.actorRoot)
+        if self.evalParamBox.isChecked():
+            if self.paramBox is not None:
+                self.paramBox.setText(getEvalParams(self.paramBox.text()))
+            if self.rotXBox is not None:
+                self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
+            if self.rotYBox is not None:
+                self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
+            if self.rotZBox is not None:
+                self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
 
     def copyParam(self):
         """Called when the user clicks on a parameter 'label'"""
@@ -156,7 +153,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setParams(self):
         """Called when the user updates one of the 4 parameter boxes"""
-        paramsToWidgets(self)
+        try:
+            paramsToWidgets(self)
+            self.evalOnUpdate()
+        except ValueError:
+            # prevents errors made by the user
+            pass
 
 
 # start the app

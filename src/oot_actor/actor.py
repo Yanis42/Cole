@@ -9,9 +9,9 @@ from .actor_getters import (
     getActorIDFromName,
     getEvalParams,
     getActorTypeValue,
-    getParamValue,
     getObjName,
     getTiedParams,
+    getFinalParams,
 )
 
 
@@ -77,24 +77,10 @@ def updateParameters(self, actorRoot: ET.Element):
         for actor in actorRoot:
             # for each displayed widgets, get the param value, format it, remove useless elements
             # then generate a string out of the list and set that to the correct line edit widget
-            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
-
             if actor.get("ID") == actorID:
                 for target in targetList:
-                    params = getParamValue(self, actor, target)
-                    paramValue = " | ".join(params) if len(params) > 0 else "0x0"
-
+                    paramValue = getFinalParams(self, actor, target, None)
                     if target == "Params":
-                        evalType = int(getEvalParams(f"0x{typeParam}"), base=16)
-                        evalParamValue = int(getEvalParams(paramValue), base=16)
-                        if evalType and evalParamValue:
-                            paramValue = f"(0x{typeParam} | ({paramValue}))"
-                        elif evalType and not evalParamValue:
-                            paramValue = f"0x{typeParam}"
-                        elif not evalType and evalParamValue:
-                            paramValue = f"({paramValue})"
-                        else:
-                            paramValue = "0x0"
                         self.paramBox.setText(paramValue)
                     elif target == "XRot":
                         self.rotXBox.setText(paramValue)
@@ -148,33 +134,25 @@ def resetActorUI(self):
 def paramsToWidgets(self):
     """Updates the widgets' values when a new parameter is set in the paramBox"""
     sender = self.sender()
-    paramWidget = sender.text()
-    selectecItem = self.actorFoundBox.currentItem()
-    paramList = paramWidget.split(" | ")
+    selectedItem = self.actorFoundBox.currentItem()
+    params = int(getEvalParams(sender.text()), base=16)
 
     actorID = None
-    if selectecItem is not None:
-        actorID = getActorIDFromName(self.actorRoot, selectecItem.text())
-
-    paramType = self.paramBox.text().split(" | ")[0]
-    if not "<<" in paramType and not "&" in paramType:
-        paramType = int(getEvalParams(paramType.lstrip("(").rstrip(")")), base=16)
-    else:
-        paramType = None
+    if selectedItem is not None:
+        actorID = getActorIDFromName(self.actorRoot, selectedItem.text())
 
     for actor in self.actorRoot:
         if actorID is not None and actor.get("ID") == actorID:
             typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
-            for part in paramList:
-                for elem in actor:
-                    objName = getObjName(actor, elem)
-                    tiedTypeList = elem.get("TiedActorTypes")
-                    target = elem.get("Target", "Params")
-                    tiedParams = getTiedParams(tiedTypeList, typeParam)
-
-                    if elem.tag == "Type":
-                        paramType &= int(elem.get("Mask", "0xFFFF"), base=16)
-                        setActorType(self, elem, f"{paramType:04X}")
-                    elif not elem.tag == "Notes" and (objNameToTarget[sender.objectName()] == target) and tiedParams:
-                        setActorWidgets(actor, elem, int(getEvalParams(part), base=16), objName)
+            senderTarget = objNameToTarget[sender.objectName()]
+            for elem in actor:
+                if elem.tag == "Type" and senderTarget == "Params":
+                    paramType = params & int(elem.get("Mask", "0xFFFF"), base=16)
+                    setActorType(self, elem, f"{paramType:04X}")
+                elif (
+                    not elem.tag == "Notes"
+                    and (senderTarget == elem.get("Target", "Params"))
+                    and getTiedParams(elem.get("TiedActorTypes"), typeParam)
+                ):
+                    setActorWidgets(actor, elem, params, getObjName(actor, elem))
             break
