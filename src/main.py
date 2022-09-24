@@ -65,7 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Called everytime the actor type is changed"""
         processActor(self, self.actorRoot)
         self.evalParamBox.setEnabled((False if self.ignoreTiedBox.isChecked() else True))
-        initParamBox(self)
+        self.paramOnUpdate()
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
