@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
