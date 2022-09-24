@@ -1,5 +1,5 @@
 from cole.getters import getCategories
-from cole.data import OoTActorProperty
+from cole.data import OoTActorProperty, objNameToTarget
 from .actor_getters import getActorIDFromName
 from .actor_widgets import stringProperty, enumProperty, boolProperty
 
@@ -127,6 +127,7 @@ def initOoTActorProperties(self):
         if actorNode.tag == "Actor":
             for index, elem in enumerate(actorTypes, 1):
                 propAnnotations[(actorKey + f".type{index}")] = elem
+                propAnnotations[(actorKey + f".type{index}.index")] = 0
             for index, elem in enumerate(actorEnums, 1):
                 objName = actorKey + f".enum{index}"
                 enumProp, label = enumProperty(self, objName, name=actorEnumNames[index - 1], items=elem)
@@ -152,4 +153,31 @@ def initActorTypeBox(self):
                         if items is not None and (len(items) > 0):
                             self.actorTypeList.addItems(items)
                             self.actorTypeList.setEnabled(True)
+                            self.actorTypeList.setCurrentIndex(OoTActorProperty.__annotations__[f"{objName}.index"])
                         return
+
+
+def initParamBox(self):
+    """Enables the label and the line edit if the actor has the corresponding target"""
+    targetList = []
+    prefixList = ["param", "rotX", "rotY", "rotZ"]
+    suffixList = ["Box", "Label"]
+
+    selectedItem = self.actorFoundBox.currentItem()
+    if selectedItem is not None:
+        actorID = getActorIDFromName(self.actorRoot, selectedItem.text())
+        for actor in self.actorRoot:
+            if actor.get("ID") == actorID:
+                for elem in actor:
+                    if elem.tag == "Type":
+                        objName = actor.get("Key") + f".type{elem.get('Index', '1')}.index"
+                        OoTActorProperty.__annotations__[objName] = self.actorTypeList.currentIndex()
+
+                    targetList.append(elem.get("Target", "Params"))
+
+    for prefix in prefixList:
+        for suffix in suffixList:
+            objName = f"{prefix}{suffix}"
+            isEnabled = True if objNameToTarget[objName] in targetList and not self.ignoreTiedBox.isChecked() else False
+            widget = getattr(self, objName)
+            widget.setEnabled(isEnabled)

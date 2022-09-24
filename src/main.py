@@ -8,7 +8,7 @@ from cole.data import uiFile
 from cole.getters import getRoot
 from oot_actor.actor_getters import getActors, getEvalParams
 from cole.general import copyToClipboard
-from oot_actor.actor_init import initActorConnections, initActorComponents, initActorTypeBox
+from oot_actor.actor_init import initActorConnections, initActorComponents, initActorTypeBox, initParamBox
 from oot_actor.actor import (
     processActor,
     removeActor,
@@ -58,27 +58,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def foundBoxOnUpdate(self):
         """Called everytime a new actor is chosen"""
         initActorTypeBox(self)
-        self.paramBox.setText("0x0")
-        self.rotXBox.setText("0x0")
-        self.rotYBox.setText("0x0")
-        self.rotZBox.setText("0x0")
-
-    def typeBoxOnUpdate(self):
-        """Called everytime the actor type is changed"""
-        clearParamLayout(self)
         processActor(self, self.actorRoot)
         self.paramOnUpdate()
 
-        enabled = False if self.ignoreTiedBox.isChecked() else True
-        self.evalParamBox.setEnabled(enabled)
-        self.paramBox.setEnabled(enabled)
-        self.rotXBox.setEnabled(enabled)
-        self.rotYBox.setEnabled(enabled)
-        self.rotZBox.setEnabled(enabled)
-        self.paramLabel.setEnabled(enabled)
-        self.rotXLabel.setEnabled(enabled)
-        self.rotYLabel.setEnabled(enabled)
-        self.rotZLabel.setEnabled(enabled)
+    def typeBoxOnUpdate(self):
+        """Called everytime the actor type is changed"""
+        processActor(self, self.actorRoot)
+        self.evalParamBox.setEnabled((False if self.ignoreTiedBox.isChecked() else True))
+        initParamBox(self)
 
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""

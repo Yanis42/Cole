@@ -17,6 +17,7 @@ from .actor_getters import (
 
 def processActor(self, actorRoot: ET.Element):
     """Adds needed widgets to the UI's form"""
+    clearParamLayout(self)
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         label = addLabel(self, "noParamLabel", "This actor doesn't have parameters.")
@@ -25,7 +26,7 @@ def processActor(self, actorRoot: ET.Element):
         for actor in actorRoot:
             typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
             if actor.get("Name") == selectedItem.text():
-                if len(actor) == 0:
+                if (len(actor) == 0) or ((len(actor) == 1) and (actor[0].tag == "Notes")):
                     label.setHidden(False)
                     self.paramLayout.addRow(label, None)
                     break

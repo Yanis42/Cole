@@ -55,4 +55,8 @@ objNameToTarget = {
     "rotXBox": "XRot",
     "rotYBox": "YRot",
     "rotZBox": "ZRot",
+    "paramLabel": "Params",
+    "rotXLabel": "XRot",
+    "rotYLabel": "YRot",
+    "rotZLabel": "ZRot",
 }
