@@ -3,7 +3,7 @@ from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
-from os import name as osName
+from os import path, name as osName
 from cole.data import uiFile
 from cole.getters import getRoot
 from oot_actor.actor_getters import getActors, getEvalParams
@@ -21,7 +21,7 @@ from oot_actor.actor import (
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    actorRoot = getRoot("res/actorList.xml")
+    actorRoot = getRoot(path.dirname(path.abspath(__file__)) + "/../res/actorList.xml")
 
     def __init__(self):
         """Main initialisation function"""

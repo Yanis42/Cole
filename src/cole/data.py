@@ -1,5 +1,6 @@
 from ast import Add, Sub, Mult, Div, Mod, LShift, RShift, RShift, BitOr, BitAnd, BitXor
 from operator import add, sub, mul, truediv, mod, lshift, rshift, rshift, or_, and_, xor
+from os import path
 
 
 class OoTActorProperty(object):
@@ -8,7 +9,7 @@ class OoTActorProperty(object):
     pass
 
 
-uiFile = "res/MainWindow.ui"
+uiFile = path.dirname(path.abspath(__file__)) + "/../../res/MainWindow.ui"
 
 actorCatDebugToNormal = {
     "ACTORCAT_SWITCH": "Switch",

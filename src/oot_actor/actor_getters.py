@@ -105,7 +105,7 @@ def getEvalParams(params: str):
     if params is None or "None" in params:
         return "0x0"
 
-    if not "0x" in params:
+    if not "0x" in params and not ("<<" in params or "&" in params):
         params = f"0x{params}"
 
     # remove spaces
