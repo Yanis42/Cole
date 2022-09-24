@@ -11,26 +11,19 @@ from .actor_getters import (
 
 def setActorType(self, elem: ET.Element, paramType: str):
     """Sets the actor type value"""
-    curText = None
-    if paramType is not None:
-        if elem.tag == "Type":
-            for item in elem:
-                if item.get("Params") == paramType:
-                    curText = item.text
-                    break
-        if curText is not None:
-            self.actorTypeList.setCurrentText(curText)
+    if elem.tag == "Type":
+        for item in elem:
+            if item.get("Params") == paramType:
+                self.actorTypeList.setCurrentText(item.text)
+                return
 
 
 def setActorComboBox(itemList: list, widget, paramPart: str):
     """Sets a ComboBox value"""
-    curText = None
     for item in itemList:
         if paramPart == item[2]:
-            curText = item[1]
-            break
-    if curText is not None:
-        widget.setCurrentText(curText)
+            widget.setCurrentText(item[1])
+            return
 
 
 def setActorWidgets(actor: ET.Element, elem: ET.Element, params: int, objName: str):
