@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from os import name as osName
+from os import path, name as osName
 from sys import executable
 from subprocess import run, PIPE
 
@@ -39,8 +39,9 @@ def main():
         # Windows needs a ``;``
         dataArg = dataArg.replace(":", ";")
 
+    upxArg = "--upx-dir tools/upx"
     # -w: no console, -F: single file, -n: name of the generated file
-    args = f"-w -F --icon=res/logo.png -n Cole {dataArg} src/main.py"
+    args = f"-w -F {upxArg} --icon=res/logo.png -n Cole {dataArg} src/main.py"
     command = f"{executable} -m {pyInstaller} {args} {excludedModules}"
     run(f"{command}".split(" "))
 
