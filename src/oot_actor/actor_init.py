@@ -1,5 +1,5 @@
 from cole.getters import getCategories
-from cole.data import OoTActorProperty, objNameToTarget
+from cole.data import OoTActorProperty, objNameToTarget, paramPrefixList
 from .actor_getters import getActorIDFromName
 from .actor_widgets import stringProperty, enumProperty, boolProperty
 
@@ -15,16 +15,16 @@ def initActorConnections(self):
     self.saveActorFileBtn.clicked.connect(self.saveActorFile)
     # self.addActorBtn.clicked.connect()
     self.deleteActorBtn.clicked.connect(self.deleteActor)
-    self.evalParamBox.stateChanged.connect(self.evalOnUpdate)
-    self.paramLabel.clicked.connect(self.copyParam)
-    self.rotXLabel.clicked.connect(self.copyRotX)
-    self.rotYLabel.clicked.connect(self.copyRotY)
-    self.rotZLabel.clicked.connect(self.copyRotZ)
+    self.evalParamBox.stateChanged.connect(self.paramOnUpdate)
     self.deleteAllBtn.clicked.connect(self.deleteAll)
-    self.paramBox.editingFinished.connect(self.setParams)
-    self.rotXBox.editingFinished.connect(self.setParams)
-    self.rotYBox.editingFinished.connect(self.setParams)
-    self.rotZBox.editingFinished.connect(self.setParams)
+    for prefix in paramPrefixList:
+        for suffix in ["Box", "Label"]:
+            widget = getattr(self, f"{prefix}{suffix}")
+            if widget is not None:
+                if suffix == "Box":
+                    widget.editingFinished.connect(self.setParams)
+                elif suffix == "Label":
+                    widget.clicked.connect(self.copyParam)
 
 
 def initActorComponents(self):
@@ -160,8 +160,6 @@ def initActorTypeBox(self):
 def initParamBox(self):
     """Enables the label and the line edit if the actor has the corresponding target"""
     targetList = []
-    prefixList = ["param", "rotX", "rotY", "rotZ"]
-    suffixList = ["Box", "Label"]
 
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
@@ -169,14 +167,10 @@ def initParamBox(self):
         for actor in self.actorRoot:
             if actor.get("ID") == actorID:
                 for elem in actor:
-                    if elem.tag == "Type":
-                        objName = actor.get("Key") + f".type{elem.get('Index', '1')}.index"
-                        OoTActorProperty.__annotations__[objName] = self.actorTypeList.currentIndex()
-
                     targetList.append(elem.get("Target", "Params"))
 
-    for prefix in prefixList:
-        for suffix in suffixList:
+    for prefix in paramPrefixList:
+        for suffix in ["Box", "Label"]:
             objName = f"{prefix}{suffix}"
             isEnabled = True if objNameToTarget[objName] in targetList and not self.ignoreTiedBox.isChecked() else False
             widget = getattr(self, objName)

@@ -49,7 +49,7 @@ def getActorIDFromName(actorRoot: ET.Element, actorName: str):
     return
 
 
-def getActorTypeValue(self, actor: ET.Element, selectedType: str, actorID: str):
+def getActorTypeValue(self, actor: ET.Element, selectedIndex: int, actorID: str):
     """Returns an actor's type list value"""
     if not self.actorTypeList.isEnabled():
         return "0000"
@@ -57,18 +57,18 @@ def getActorTypeValue(self, actor: ET.Element, selectedType: str, actorID: str):
         for elem in actor:
             if elem.tag == "Type":
                 objName = actor.get("Key") + f".type{elem.get('Index', '1')}"
-                return getEnumValueFromObjName(objName, selectedType)
+                return getEnumValueFromObjName(objName, selectedIndex)
     return
 
 
-def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedType: str, actorID: str, elemTag: str):
+def getActorEnumValue(actor: ET.Element, elem: ET.Element, selectedIndex: int, actorID: str, elemTag: str):
     """Returns an actor's enum param value"""
     if actor.get("ID") == actorID:
         actorKey = actor.get("Key")
         index = elem.get("Index", "1")
         objName = getListObjName(elem, elemTag, actorKey, index)
         if objName is not None:
-            return getEnumValueFromObjName(objName, selectedType)
+            return getEnumValueFromObjName(objName, selectedIndex)
     return
 
 
@@ -85,14 +85,12 @@ def getListObjName(elem: ET.Element, elemTag: str, actorKey: str, index: str):
     return
 
 
-def getEnumValueFromObjName(objName: str, selectedType: str):
+def getEnumValueFromObjName(objName: str, index: int):
     """Returns the value using the object name"""
     # see ``initOoTActorProperties`` for list format
     enumList = OoTActorProperty.__annotations__[objName]
     if enumList is not None:
-        for elem in enumList:
-            if selectedType == elem[1]:
-                return elem[2]
+        return enumList[index][2]
     return
 
 
@@ -105,7 +103,7 @@ def getEvalParams(params: str):
     if params is None or "None" in params:
         return "0x0"
 
-    if not "0x" in params:
+    if not "0x" in params and not ("<<" in params or "&" in params):
         params = f"0x{params}"
 
     # remove spaces
@@ -156,7 +154,7 @@ def getParamValue(self, actor: ET.Element, target: str):
     # this function should be called when we know for sure it's the right actor
     params = []
     actorID = actor.get("ID")
-    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
+    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentIndex(), actorID)
 
     # iterates through the sub-elements of the actor
     for elem in actor:
@@ -182,7 +180,7 @@ def getParamValue(self, actor: ET.Element, target: str):
                     or elem.tag == "Collectible"
                     or elem.tag == "Message"
                 ):
-                    enumParam = getActorEnumValue(actor, elem, widget.currentText(), actor.get("ID"), elem.tag)
+                    enumParam = getActorEnumValue(actor, elem, widget.currentIndex(), actor.get("ID"), elem.tag)
                     value = enumParam if enumParam is not None else "0x0"
                 elif (elem.tag == "Property") or (elem.tag == "Flag"):
                     value = widget.text()
@@ -234,7 +232,7 @@ def getTiedParams(tiedTypeList: str, typeParam: str):
 
 
 def getFinalParams(self, actor: ET.Element, target: str, params: str):
-    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actor.get("ID"))
+    typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentIndex(), actor.get("ID"))
     params = getParamValue(self, actor, target) if params is None else params
     paramValue = " | ".join(params) if len(params) > 0 else "0x0"
     if target == "Params":

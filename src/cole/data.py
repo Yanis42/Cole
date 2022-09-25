@@ -8,8 +8,6 @@ class OoTActorProperty(object):
     pass
 
 
-uiFile = "res/MainWindow.ui"
-
 actorCatDebugToNormal = {
     "ACTORCAT_SWITCH": "Switch",
     "ACTORCAT_BG": "BG Actor",
@@ -60,3 +58,5 @@ objNameToTarget = {
     "rotYLabel": "YRot",
     "rotZLabel": "ZRot",
 }
+
+paramPrefixList = ["param", "rotX", "rotY", "rotZ"]
