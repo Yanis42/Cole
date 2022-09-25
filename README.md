@@ -1,27 +1,48 @@
 # Project Cole
-Zelda: Ocarina of Time Actor Parameter Viewer/Editor.
+Multi-platform Zelda: Ocarina of Time Mod Helper.
+
+<img src="res/images/cole_actors.png" width="500">
 
 ## Features
-- Searching an actor from the list (with filters)
-- View an actor's parameter list
-- Delete an actor of the list
-- Button to change the actor file
-- Edit actor parameters to get the hex value
-- Safe ``eval()`` function to avoid any security issues, from [Fast64](https://github.com/fast-64/fast64)
-- Copy the parameters in the clipboard by clicking on the label next the parameter/rotation textbox of your choice
-- Reverse the param process, from hex to values on the UI (need extra testing)
+<details closed>
+<summary>Search Actors by name, ID and category</summary>
+<img src="res/images/actors/actor_search/search_name.png" width="200">
+<img src="res/images/actors/actor_search/search_id.png" width="200">
+<img src="res/images/actors/actor_search/search_category.png" width="200">
+</details>
+
+<details closed>
+<summary>View and get an actor's parameters</summary>
+<img src="res/images/actors/actor_parameters/params_panel.png" width="300">
+
+You can reverse the process too! Simply enter the parameters in the correct textbox then press enter.
+</details>
+
+<details closed>
+<summary>Switch between detailed and compressed parameter format</summary>
+<img src="res/images/actors/actor_parameters/params_detailed.png" width="250">
+<img src="res/images/actors/actor_parameters/params_compact.png" width="250">
+</details>
+
+<details closed>
+<summary>Copy the value to the clipboard by clicking on the parameter name</summary>
+<img src="res/images/actors/actor_parameters/params_copy.png" width="300">
+</details>
+
+<details closed>
+<summary>Add, edit and delete actors</summary>
+<img src="res/images/actors/actors_options.png" width="250">
+
+The opened XML need to have the same format as the default/saved one. ``Add`` and ``Edit`` options not implemented yet.
+</details>
 
 ## Planned Features
-- Add an actor in the list
+- Add/Edit an actor
 - A list on the UI containing the current flags of the scene and warn if one is already used (Ticamus)
+- Statistics about actors
 
 ## TODO
 - Avoid reloading the UI when an actor is deleted (?)
-
-## How it works
-When the program initialises, it creates all the necessary widgets and then hides them (otherwise you can see them on the UI). Then, when we need to show the widgets, it hides the ones that are currently displayed, removes the row and shows the new widgets on a new row.
-
-Basically, it's like the way Blender works with PR #56, generating everything on initialisation and then showing/hiding as needed.
 
 ## Requirements
 If executing from source, you will need the following:
@@ -31,3 +52,6 @@ If executing from source, you will need the following:
 
 ## Contributions are welcome!
 This project use Black to format the code properly
+
+## Special Thanks
+- [Fast64](https://github.com/fast-64/fast64), for the safe ``eval()`` function (avoids security issues)
