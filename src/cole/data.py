@@ -1,6 +1,5 @@
 from ast import Add, Sub, Mult, Div, Mod, LShift, RShift, RShift, BitOr, BitAnd, BitXor
 from operator import add, sub, mul, truediv, mod, lshift, rshift, rshift, or_, and_, xor
-from os import path
 
 
 class OoTActorProperty(object):
