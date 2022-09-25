@@ -3,6 +3,9 @@ Multi-platform Zelda: Ocarina of Time Mod Helper.
 
 <img src="res/images/cole_actors.png" width="500">
 
+## Usage
+After installing the [requirements](#requirements), you can either [build](#building-optional) or simply execute ``src/main.py`` to use this program.
+
 ## Features
 <details closed>
 <summary>Search Actors by name, ID and category</summary>
@@ -49,7 +52,7 @@ If executing from source, you will need the following:
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
 - PyQt6
 
-## Building:
+## Building (Optional)
 You will need the following module:
 - PyInstaller
 
