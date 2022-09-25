@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from PyQt6 import uic, QtWidgets
-from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
 from os import path, name as osName
@@ -23,12 +22,28 @@ from oot_actor.actor import (
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    actorRoot = getRoot(path.dirname(path.abspath(__file__)) + "/../res/actorList.xml")
+    actorPath = path.dirname(path.abspath(__file__)) + "/../res/actorList.xml"
+    if not path.isfile(actorPath):
+        # temp fix for executables
+        actorPath = actorPath.replace("/..", "")
+    actorRoot = getRoot(actorPath)
 
     def __init__(self):
         """Main initialisation function"""
         super(MainWindow, self).__init__()
-        uic.loadUi((path.dirname(path.abspath(__file__)) + "/../res/MainWindow.ui"), self)
+
+        uiPath = path.dirname(path.abspath(__file__)) + "/../res/MainWindow.ui"
+        if not path.isfile(uiPath):
+            # temp fix for executables
+            uiPath = uiPath.replace("/..", "")
+        uic.loadUi(uiPath, self)
+
+        if self.actorRoot is None:
+            defaultDir = str(Path.home())
+            fname = QtWidgets.QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")
+            if fname[0] == "":
+                exit(0)
+            self.actorRoot = getRoot(fname[0])
         initActorConnections(self)
         initActorComponents(self)
         self.title = self.windowTitle()
@@ -65,7 +80,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openActorFile(self):
         """Called everytime the 'open file' button is clicked"""
         defaultDir = str(Path.home())
-        path = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")[0]
+        path = QtWidgets.QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")[0]
         if len(path):
             self.actorRoot = ET.parse(path).getroot()
             resetActorUI(self)
@@ -74,7 +89,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveActorFile(self):
         """Called everytime the 'save file' button is clicked"""
         defaultDir = str(Path.home())
-        path = QFileDialog.getSaveFileName(None, "Save File", defaultDir, "*.xml")[0]
+        path = QtWidgets.QFileDialog.getSaveFileName(None, "Save File", defaultDir, "*.xml")[0]
         if len(path):
             writeActorFile(self.actorRoot, path)
             self.setWindowTitle(f"{self.title}")

@@ -1,5 +1,4 @@
 # Project files
-.vscode/
 __pycache__/
 dist/
 build/

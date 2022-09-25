@@ -48,7 +48,12 @@ The opened XML need to have the same format as the default/saved one. ``Add`` an
 If executing from source, you will need the following:
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
 - PyQt6
-- (Optional) PyInstaller if you want to build an executable. Note that antiviruses might get angry, if you have any doubt the source code is available.
+
+## Building:
+You will need the following module:
+- PyInstaller
+
+Then run ``build.py``, your executable will be in the ``dist`` folder. It will build an executable for the OS where you execute this script. Note that antiviruses might get angry, if you have any doubt the source code is available.
 
 ## Contributions are welcome!
 This project use Black to format the code properly
