@@ -2,9 +2,9 @@
 __pycache__/
 dist/
 build/
-tools/upx
+*tools/upx/*
 *.exe
 *.spec
 
 # Specific Includes
-!tools/upx/*.md
+!tools/upx/README.md
