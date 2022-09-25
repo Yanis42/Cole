@@ -40,7 +40,7 @@ def main():
         dataArg = dataArg.replace(":", ";")
 
     # -w: no console, -F: single file, -n: name of the generated file
-    args = f'-w -F --icon=res/logo.png -n "Cole" {dataArg} "src/main.py"'
+    args = f"-w -F --icon=res/logo.png -n Cole {dataArg} src/main.py"
     command = f"{executable} -m {pyInstaller} {args} {excludedModules}"
     run(f"{command}".split(" "))
 
