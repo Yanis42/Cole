@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from os import name as osName
 from sys import executable
 from subprocess import run, PIPE
