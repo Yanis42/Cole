@@ -55,7 +55,10 @@ If executing from source, you will need the following:
 ## Building (Optional)
 You will need the following module:
 - PyInstaller
-- Not required but recommended: [UPX](https://github.com/upx/upx/releases/tag/v3.96) (unzip the folder inside the zip in the ``tools/upx`` folder)
+
+Optional requirement:
+- [UPX](https://github.com/upx/upx/releases/tag/v3.96) (unzip the folder inside the zip in the ``tools/upx`` folder)
+UPX can reduce the size of the executable, this is not required
 
 Then run ``build.py``, your executable will be in the ``dist`` folder. It will build an executable for the OS where you execute this script. Note that antiviruses might get angry, if you have any doubt the source code is available.
 
