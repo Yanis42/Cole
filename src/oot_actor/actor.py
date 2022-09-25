@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QFormLayout, QCheckBox
 from cole.data import OoTActorProperty, subElemTags, objNameToTarget
 from .actor_init import initOoTActorProperties
 from .actor_widgets import addLabel
-from .actor_setters import setActorType, setActorWidgets
+from .actor_setters import setActorType, setActorWidgets, setParamsText
 from .actor_getters import (
     getActorIDFromName,
     getEvalParams,
@@ -24,7 +24,7 @@ def processActor(self, actorRoot: ET.Element):
         label.setFixedWidth(200)
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
         for actor in actorRoot:
-            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentIndex(), actorID)
             if actor.get("Name") == selectedItem.text():
                 if (len(actor) == 0) or ((len(actor) == 1) and (actor[0].tag == "Notes")):
                     label.setHidden(False)
@@ -70,7 +70,6 @@ def removeActor(currentItem, actorRoot: ET.Element):
 
 def updateParameters(self, actorRoot: ET.Element):
     """Updates the parameters from the 4 line edits"""
-    targetList = ["Params", "XRot", "YRot", "ZRot"]
     selectedItem = self.actorFoundBox.currentItem()
     if selectedItem is not None:
         actorID = getActorIDFromName(actorRoot, selectedItem.text())
@@ -79,7 +78,7 @@ def updateParameters(self, actorRoot: ET.Element):
             # for each displayed widgets, get the param value, format it, remove useless elements
             # then generate a string out of the list and set that to the correct line edit widget
             if actor.get("ID") == actorID:
-                for target in targetList:
+                for target in ["Params", "XRot", "YRot", "ZRot"]:
                     paramValue = getFinalParams(self, actor, target, None)
                     if target == "Params":
                         self.paramBox.setText(paramValue)
@@ -121,10 +120,7 @@ def resetActorUI(self):
     self.actorFoundBox.clear()
     self.actorCategoryList.clear()
     self.actorTypeList.clear()
-    self.paramBox.setText("")
-    self.rotXBox.setText("")
-    self.rotYBox.setText("")
-    self.rotZBox.setText("")
+    setParamsText(self, "")
     self.actorFoundLabel.setText("Found: 0")
     self.ignoreTiedBox.setHidden(True)
     self.ignoreTiedBox.setChecked(False)
@@ -144,7 +140,7 @@ def paramsToWidgets(self):
 
     for actor in self.actorRoot:
         if actorID is not None and actor.get("ID") == actorID:
-            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentText(), actorID)
+            typeParam = getActorTypeValue(self, actor, self.actorTypeList.currentIndex(), actorID)
             senderTarget = objNameToTarget[sender.objectName()]
             for elem in actor:
                 if elem.tag == "Type" and senderTarget == "Params":

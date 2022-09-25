@@ -6,16 +6,16 @@ from PyQt6.QtWidgets import QFileDialog
 from xml.etree import ElementTree as ET
 from sys import exit, argv
 from os import path, name as osName
-from cole.data import uiFile
 from cole.getters import getRoot
-from oot_actor.actor_getters import getActors, getEvalParams
+from oot_actor.actor_getters import getActors
+from oot_actor.actor_setters import setParamsText
 from cole.general import copyToClipboard
+from cole.data import paramPrefixList
 from oot_actor.actor_init import initActorConnections, initActorComponents, initActorTypeBox, initParamBox
 from oot_actor.actor import (
     processActor,
     removeActor,
     updateParameters,
-    clearParamLayout,
     resetActorUI,
     writeActorFile,
     paramsToWidgets,
@@ -28,25 +28,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         """Main initialisation function"""
         super(MainWindow, self).__init__()
-        uic.loadUi(uiFile, self)
-        self.initConnections()
-        self.initComponents()
+        uic.loadUi((path.dirname(path.abspath(__file__)) + "/../res/MainWindow.ui"), self)
+        initActorConnections(self)
+        initActorComponents(self)
         self.title = self.windowTitle()
 
         # taskbar icon trick for Windows
         if osName == "nt":
             from ctypes import windll
 
-            myappid = "cole.oot_mod_helper".encode("UTF-8")  # encoding probably useless but just in case
-            windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-    def initConnections(self):
-        """Links the widgets to their callback function"""
-        initActorConnections(self)
-
-    def initComponents(self):
-        """Initialise the UI widgets"""
-        initActorComponents(self)
+            # encoding probably useless but just in case
+            windll.shell32.SetCurrentProcessExplicitAppUserModelID("cole.oot_mod_helper".encode("UTF-8"))
 
     # connections callbacks
 
@@ -60,6 +52,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def foundBoxOnUpdate(self):
         """Called everytime a new actor is chosen"""
         initActorTypeBox(self)
+        initParamBox(self)
         processActor(self, self.actorRoot)
         self.paramOnUpdate()
 
@@ -76,7 +69,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(path):
             self.actorRoot = ET.parse(path).getroot()
             resetActorUI(self)
-            self.initComponents()
+            initActorComponents(self)
 
     def saveActorFile(self):
         """Called everytime the 'save file' button is clicked"""
@@ -91,43 +84,22 @@ class MainWindow(QtWidgets.QMainWindow):
         index = self.actorFoundBox.currentRow()
         removeActor(self.actorFoundBox.currentItem(), self.actorRoot)
         resetActorUI(self)
-        self.initComponents()
+        initActorComponents(self)
         self.actorFoundBox.setCurrentRow(index)
         self.setWindowTitle(f"{self.title} (unsaved changes)")
 
     def paramOnUpdate(self):
-        """Called everytime a parameter widget is updated"""
-        if self.actorFoundBox.currentRow() >= 0:
-            self.evalOnUpdate()
-
-    def evalOnUpdate(self):
-        """Called everytime the eval checkbox is updated"""
+        """Called everytime the parameters need to be updated"""
         updateParameters(self, self.actorRoot)
-        if self.evalParamBox.isChecked():
-            if self.paramBox is not None:
-                self.paramBox.setText(getEvalParams(self.paramBox.text()))
-            if self.rotXBox is not None:
-                self.rotXBox.setText(getEvalParams(self.rotXBox.text()))
-            if self.rotYBox is not None:
-                self.rotYBox.setText(getEvalParams(self.rotYBox.text()))
-            if self.rotZBox is not None:
-                self.rotZBox.setText(getEvalParams(self.rotZBox.text()))
+        if self.actorFoundBox.currentRow() >= 0 and self.evalParamBox.isChecked():
+            setParamsText(self, None)
 
     def copyParam(self):
         """Called when the user clicks on a parameter 'label'"""
-        copyToClipboard(self.paramBox.text())
-
-    def copyRotX(self):
-        """Called when the user clicks on a parameter 'label'"""
-        copyToClipboard(self.rotXBox.text())
-
-    def copyRotY(self):
-        """Called when the user clicks on a parameter 'label'"""
-        copyToClipboard(self.rotYBox.text())
-
-    def copyRotZ(self):
-        """Called when the user clicks on a parameter 'label'"""
-        copyToClipboard(self.rotZBox.text())
+        for prefix in paramPrefixList:
+            widget = getattr(self, f"{prefix}Box")
+            if widget is not None and widget == self.sender():
+                copyToClipboard(widget.text())
 
     def deleteAll(self):
         """Called when the user wants to delete every actors"""
@@ -137,14 +109,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.deleteAll()
             return
         resetActorUI(self)
-        self.initComponents()
+        initActorComponents(self)
         self.setWindowTitle(f"{self.title} (unsaved changes)")
 
     def setParams(self):
         """Called when the user updates one of the 4 parameter boxes"""
         try:
             paramsToWidgets(self)
-            self.evalOnUpdate()
+            self.paramOnUpdate()
         except ValueError:
             # prevents errors made by the user
             pass

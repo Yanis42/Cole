@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET
 from PyQt6.QtWidgets import QCheckBox, QLineEdit, QComboBox
 from PyQt6.QtCore import Qt
-from cole.data import OoTActorProperty
+from cole.data import OoTActorProperty, paramPrefixList
 from .actor_getters import (
     getEvalParams,
     getShiftFromMask,
@@ -45,3 +45,11 @@ def setActorWidgets(actor: ET.Element, elem: ET.Element, params: int, objName: s
             if itemName is not None:
                 itemList = OoTActorProperty.__annotations__[itemName]
                 setActorComboBox(itemList, widget, paramPart)
+
+
+def setParamsText(self, text: str):
+    """Sets text for every parameter box"""
+    for prefix in paramPrefixList:
+        widget = getattr(self, f"{prefix}Box")
+        if widget is not None:
+            widget.setText(getEvalParams(widget.text()) if text is None else text)
