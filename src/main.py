@@ -141,5 +141,13 @@ class MainWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(argv)
     mainWindow = MainWindow()
+
+    try:
+        from qdarktheme import load_stylesheet
+
+        app.setStyleSheet(load_stylesheet())
+    except ModuleNotFoundError:
+        pass
+
     mainWindow.show()
     exit(app.exec())
