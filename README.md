@@ -51,7 +51,7 @@ The opened XML need to have the same format as the default/saved one. ``Add`` an
 If executing from source, you will need the following:
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
 - PyQt6
-- PyQtDarkTheme (Optional, installing this if you want to use a dark theme)
+- PyQtDarkTheme (Optional, install this if you want to use a dark theme)
 
 ## Building (Optional)
 You will need the following module:
