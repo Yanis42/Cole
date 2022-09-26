@@ -3,6 +3,9 @@ Multi-platform Zelda: Ocarina of Time Mod Helper.
 
 <img src="res/images/cole_actors.png" width="500">
 
+## Usage
+After installing the [requirements](#requirements), you can either [build](#building-optional) or simply execute ``src/main.py`` to use this program.
+
 ## Features
 <details closed>
 <summary>Search Actors by name, ID and category</summary>
@@ -48,7 +51,17 @@ The opened XML need to have the same format as the default/saved one. ``Add`` an
 If executing from source, you will need the following:
 - Python 3.7+ (done with 3.10, untested with previous versions but should work)
 - PyQt6
-- (Optional) PyInstaller if you want to build an executable. Note that antiviruses might get angry, if you have any doubt the source code is available.
+- PyQtDarkTheme (Optional, install this if you want to use a dark theme)
+
+## Building (Optional)
+You will need the following module:
+- PyInstaller
+
+Optional requirement:
+- [UPX](https://github.com/upx/upx/releases/tag/v3.96) (unzip the folder inside the zip in the ``tools/upx`` folder)
+UPX can reduce the size of the executable, this is not required
+
+Then run ``build.py``, your executable will be in the ``dist`` folder. It will build an executable for the OS where you execute this script. Note that antiviruses might get angry, if you have any doubt the source code is available.
 
 ## Contributions are welcome!
 This project use Black to format the code properly

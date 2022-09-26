@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Build",
+            "type": "python",
+            "request": "launch",
+            "program": "build.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

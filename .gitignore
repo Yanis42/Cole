@@ -1,7 +1,10 @@
 # Project files
-.vscode/
 __pycache__/
 dist/
 build/
+*tools/upx/*
 *.exe
 *.spec
+
+# Specific Includes
+!tools/upx/README.md

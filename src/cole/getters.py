@@ -9,10 +9,7 @@ def getRoot(xmlFile: str):
     try:
         root = ET.parse(xmlFile).getroot()
     except FileNotFoundError:
-        print(f"[COLE:ERROR]: File ``{xmlFile}`` not found!")
-        defaultDir = str(Path.home())
-        fname = QFileDialog.getOpenFileName(None, "Open Actor List XML File", defaultDir, "*.xml")
-        root = getRoot(fname[0])
+        root = None
 
     return root
 
