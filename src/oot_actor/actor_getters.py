@@ -141,12 +141,9 @@ def getFormattedParams(mask: int, value: str, isBool: bool):
     if not int(getEvalParams(value), base=16):
         return
     elif not isBool:
-        if shift > 0:
-            return f"(({value} << {shift}) & 0x{mask:04X})"
-        else:
-            return f"({value} & 0x{mask:04X})"
+        return f"(({value} << {shift}) & 0x{mask:04X})" if shift > 0 else f"({value} & 0x{mask:04X})"
     else:
-        return f"({value} << {shift})"
+        return f"({value} << {shift})" if shift > 0 else f"0x{value}"
 
 
 def getParamValue(self, actor: ET.Element, target: str):
